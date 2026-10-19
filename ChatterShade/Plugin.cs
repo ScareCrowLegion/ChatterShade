@@ -122,6 +122,8 @@ public sealed class Plugin : IAsyncDalamudPlugin
         if (!styleEnabled)
             return;
 
+        var useSolidBackground = (useDarkDialogueColors ? Configuration.DarkBackgroundMode : Configuration.StandardBackgroundMode) == DialogueBackgroundMode.SolidColor;
+
         originalTextColor = textNode->TextColor;
         modifiedTextNode = (nint)textNode;
 
@@ -142,7 +144,8 @@ public sealed class Plugin : IAsyncDalamudPlugin
             backgroundNode->Color = tint;
             backgroundNode->DrawFlags |= 1;
 
-            if (testBackgroundNode != null &&
+            if (useSolidBackground &&
+                testBackgroundNode != null &&
                 testBackgroundAddon == args.Addon.Address &&
                 testBackgroundNodeId == modifiedBackgroundNodeId &&
                 testBackgroundNode.IsVisible)
@@ -226,6 +229,13 @@ public sealed class Plugin : IAsyncDalamudPlugin
             : Configuration.StandardDialogueEnabled;
 
         if (!styleEnabled)
+            return;
+
+        var backgroundMode = useDarkDialogueColors
+            ? Configuration.DarkBackgroundMode
+            : Configuration.StandardBackgroundMode;
+
+        if (backgroundMode != DialogueBackgroundMode.SolidColor)
             return;
 
         if (testBackgroundNode != null &&

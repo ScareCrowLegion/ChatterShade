@@ -5,6 +5,12 @@ using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 
 namespace ChatterShade;
 
+public enum DialogueBackgroundMode
+{
+    OriginalTexture = 0,
+    SolidColor = 1,
+}
+
 [Serializable]
 public class Configuration : IPluginConfiguration
 {
@@ -14,6 +20,8 @@ public class Configuration : IPluginConfiguration
     public bool Enabled { get; set; } = true;
     public bool StandardDialogueEnabled { get; set; } = true;
     public bool DarkDialogueEnabled { get; set; } = true;
+    public DialogueBackgroundMode StandardBackgroundMode { get; set; } = DialogueBackgroundMode.SolidColor;
+    public DialogueBackgroundMode DarkBackgroundMode { get; set; } = DialogueBackgroundMode.SolidColor;
     public Vector4 DialogueTextColor { get; set; } =
         new(242f / 255f, 242f / 255f, 242f / 255f, 1f);
     public Vector4 DialogueBackgroundTint { get; set; } =

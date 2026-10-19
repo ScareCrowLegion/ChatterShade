@@ -14,7 +14,7 @@ public class ConfigWindow : Window, IDisposable
         Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse;
 
-        Size = new Vector2(420, 450);
+        Size = new Vector2(420, 520);
         SizeCondition = ImGuiCond.Always;
 
         configuration = plugin.Configuration;
@@ -70,6 +70,13 @@ public class ConfigWindow : Window, IDisposable
             configuration.Save();
         }
 
+        var standardMode = (int)configuration.StandardBackgroundMode;
+        if (ImGui.Combo("Background mode##Standard", ref standardMode, "Original texture\0Solid color\0"))
+        {
+            configuration.StandardBackgroundMode = (DialogueBackgroundMode)standardMode;
+            configuration.Save();
+        }
+
         var textColor = configuration.DialogueTextColor;
         if (ImGui.ColorEdit4("Dialogue text", ref textColor, ImGuiColorEditFlags.NoAlpha))
         {
@@ -78,7 +85,12 @@ public class ConfigWindow : Window, IDisposable
         }
 
         var backgroundTint = configuration.DialogueBackgroundTint;
-        if (ImGui.ColorEdit4("Background color", ref backgroundTint, ImGuiColorEditFlags.NoAlpha))
+
+        var standardBackgroundLabel = configuration.StandardBackgroundMode == DialogueBackgroundMode.SolidColor
+                ? "Background Color##StandardBackground"
+                : "Background Tint##StandardBackground";
+
+        if (ImGui.ColorEdit4(standardBackgroundLabel, ref backgroundTint, ImGuiColorEditFlags.NoAlpha))
         {
             configuration.DialogueBackgroundTint = backgroundTint;
             configuration.Save();
@@ -115,6 +127,13 @@ public class ConfigWindow : Window, IDisposable
             configuration.Save();
         }
 
+        var darkMode = (int)configuration.DarkBackgroundMode;
+        if (ImGui.Combo("Background mode##Dark", ref darkMode, "Orginal texture\0Solid color\0"))
+        {
+            configuration.DarkBackgroundMode = (DialogueBackgroundMode)darkMode;
+            configuration.Save();
+        }
+
         var darkTextColor = configuration.DarkDialogueTextColor;
         if (ImGui.ColorEdit4("Dialogue text##Dark", ref darkTextColor, ImGuiColorEditFlags.NoAlpha))
         {
@@ -123,7 +142,12 @@ public class ConfigWindow : Window, IDisposable
         }
 
         var darkBackgroundTint = configuration.DarkDialogueBackgroundTint;
-        if (ImGui.ColorEdit4("Background tint##Dark", ref darkBackgroundTint, ImGuiColorEditFlags.NoAlpha))
+
+        var darkBackgroundLabel = configuration.DarkBackgroundMode == DialogueBackgroundMode.SolidColor
+             ? "Background color##DarkBackground"
+             : "Background tint##DarkBackground";
+
+        if (ImGui.ColorEdit4(darkBackgroundLabel, ref darkBackgroundTint, ImGuiColorEditFlags.NoAlpha))
         {
             configuration.DarkDialogueBackgroundTint = darkBackgroundTint;
             configuration.Save();
@@ -147,7 +171,7 @@ public class ConfigWindow : Window, IDisposable
             configuration.Save();
         }
 
-        ImGui.TextWrapped("Each dialogue style has separate text and solid background colors.");
+        ImGui.TextWrapped("Original texture applies a tint to your current UI texture. Solid color replaces the background.");
         ImGui.Spacing();
 
         var movable = configuration.IsConfigWindowMovable;
