@@ -22,6 +22,8 @@ public class Configuration : IPluginConfiguration
     public bool DarkDialogueEnabled { get; set; } = true;
     public DialogueBackgroundMode StandardBackgroundMode { get; set; } = DialogueBackgroundMode.SolidColor;
     public DialogueBackgroundMode DarkBackgroundMode { get; set; } = DialogueBackgroundMode.SolidColor;
+    public float StandardBackgroundOpacity { get; set; } = 1f;
+    public float DarkBackgroundOpacity { get; set; } = 1f;
     public Vector4 DialogueTextColor { get; set; } =
         new(242f / 255f, 242f / 255f, 242f / 255f, 1f);
     public Vector4 DialogueBackgroundTint { get; set; } =

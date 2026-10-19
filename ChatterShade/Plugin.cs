@@ -262,11 +262,17 @@ public sealed class Plugin : IAsyncDalamudPlugin
         if (replacementBackgroundAddon != args.Addon.Address)
             return;
 
+        var horizontalInset = useDarkDialogueColors ? 0f : 24f;
+        var topInset = useDarkDialogueColors ? 0f : 24f;
+        var bottomInset = useDarkDialogueColors ? 0f : 20f;
+
         replacementBackgroundNode.Position =
-            new Vector2(backgroundNode->X, backgroundNode->Y);
+            new Vector2(backgroundNode->X + horizontalInset * backgroundNode->ScaleX,
+                        backgroundNode->Y + topInset * backgroundNode->ScaleY);
 
         replacementBackgroundNode.Size =
-            new Vector2(backgroundNode->Width, backgroundNode->Height);
+            new Vector2(Math.Max(1f, backgroundNode->Width - horizontalInset * 2f),
+                        Math.Max(1f, backgroundNode->Height - topInset - bottomInset));
 
         replacementBackgroundNode.Scale =
             new Vector2(backgroundNode->ScaleX, backgroundNode->ScaleY);
@@ -275,7 +281,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
             new Vector2(backgroundNode->OriginX, backgroundNode->OriginY);
 
         var panelColor = useDarkDialogueColors ? Configuration.DarkDialogueBackgroundTint : Configuration.DialogueBackgroundTint;
-        panelColor.W = 1f;
+        panelColor.W = Math.Clamp(useDarkDialogueColors ? Configuration.DarkBackgroundOpacity : Configuration.StandardBackgroundOpacity, 0f, 1f);
         replacementBackgroundNode.Color = panelColor;
 
         replacementBackgroundNode.IsVisible = true;

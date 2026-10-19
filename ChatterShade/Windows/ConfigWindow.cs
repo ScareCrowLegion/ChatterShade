@@ -96,6 +96,16 @@ public class ConfigWindow : Window, IDisposable
             configuration.Save();
         }
 
+        if (configuration.StandardBackgroundMode == DialogueBackgroundMode.SolidColor)
+        {
+            var opacity = configuration.StandardBackgroundOpacity * 100f;
+            if (ImGui.SliderFloat("Background opacity##Standard", ref opacity, 0f, 100f, "%.0f%%"))
+            {
+                configuration.StandardBackgroundOpacity = opacity / 100f;
+                configuration.Save();
+            }
+        }
+
         ImGui.Spacing();
 
         if (ImGui.Button("Restore Original Appearance##Standard"))
@@ -114,6 +124,7 @@ public class ConfigWindow : Window, IDisposable
                 new Vector4(48f / 255f, 48f / 255f, 48f / 255f, 1f);
 
             configuration.StandardBackgroundMode = DialogueBackgroundMode.SolidColor;
+            configuration.StandardBackgroundOpacity = 1f;
             configuration.StandardDialogueEnabled = true;
             configuration.Save();
         }
@@ -155,6 +166,16 @@ public class ConfigWindow : Window, IDisposable
             configuration.Save();
         }
 
+        if (configuration.DarkBackgroundMode == DialogueBackgroundMode.SolidColor)
+        {
+            var opacity = configuration.DarkBackgroundOpacity * 100f;
+            if (ImGui.SliderFloat("Background opacity##Dark", ref opacity, 0f, 100f, "%.0f%%"))
+            {
+                configuration.DarkBackgroundOpacity = opacity / 100f;
+                configuration.Save();
+            }
+        }
+
         if (ImGui.Button("Restore Original Appearance##Dark"))
         {
             configuration.DarkDialogueEnabled = false;
@@ -171,6 +192,7 @@ public class ConfigWindow : Window, IDisposable
                 new Vector4(48f / 255f, 48f / 255f, 48f / 255f, 1f);
 
             configuration.DarkBackgroundMode = DialogueBackgroundMode.SolidColor;
+            configuration.DarkBackgroundOpacity = 1f;
             configuration.DarkDialogueEnabled = true;
             configuration.Save();
         }
