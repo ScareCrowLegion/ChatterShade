@@ -87,8 +87,8 @@ public class ConfigWindow : Window, IDisposable
         var backgroundTint = configuration.DialogueBackgroundTint;
 
         var standardBackgroundLabel = configuration.StandardBackgroundMode == DialogueBackgroundMode.SolidColor
-                ? "Background Color##StandardBackground"
-                : "Background Tint##StandardBackground";
+                ? "Background color##StandardBackground"
+                : "Background tint##StandardBackground";
 
         if (ImGui.ColorEdit4(standardBackgroundLabel, ref backgroundTint, ImGuiColorEditFlags.NoAlpha))
         {
@@ -104,6 +104,7 @@ public class ConfigWindow : Window, IDisposable
             configuration.Save();
         }
 
+        ImGui.SameLine();
         if (ImGui.Button("Use Dark Preset##Standard"))
         {
             configuration.DialogueTextColor =
@@ -112,6 +113,7 @@ public class ConfigWindow : Window, IDisposable
             configuration.DialogueBackgroundTint =
                 new Vector4(48f / 255f, 48f / 255f, 48f / 255f, 1f);
 
+            configuration.StandardBackgroundMode = DialogueBackgroundMode.SolidColor;
             configuration.StandardDialogueEnabled = true;
             configuration.Save();
         }
@@ -128,7 +130,7 @@ public class ConfigWindow : Window, IDisposable
         }
 
         var darkMode = (int)configuration.DarkBackgroundMode;
-        if (ImGui.Combo("Background mode##Dark", ref darkMode, "Orginal texture\0Solid color\0"))
+        if (ImGui.Combo("Background mode##Dark", ref darkMode, "Original texture\0Solid color\0"))
         {
             configuration.DarkBackgroundMode = (DialogueBackgroundMode)darkMode;
             configuration.Save();
@@ -159,6 +161,7 @@ public class ConfigWindow : Window, IDisposable
             configuration.Save();
         }
 
+        ImGui.SameLine();
         if (ImGui.Button("Use Dark Preset##Dark"))
         {
             configuration.DarkDialogueTextColor =
@@ -167,6 +170,7 @@ public class ConfigWindow : Window, IDisposable
             configuration.DarkDialogueBackgroundTint =
                 new Vector4(48f / 255f, 48f / 255f, 48f / 255f, 1f);
 
+            configuration.DarkBackgroundMode = DialogueBackgroundMode.SolidColor;
             configuration.DarkDialogueEnabled = true;
             configuration.Save();
         }

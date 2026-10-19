@@ -41,13 +41,13 @@ public sealed class Plugin : IAsyncDalamudPlugin
     internal static IFramework Framework { get; private set; } = null!;
 
     private const string CommandName = "/cshade";
-    private ColorImageNode? testBackgroundNode;
-    private nint testBackgroundAddon;
-    private uint testBackgroundNodeId;
+    private ColorImageNode? replacementBackgroundNode;
+    private nint replacementBackgroundAddon;
+    private uint replacementBackgroundNodeId;
     public Configuration Configuration { get; private set; } = null!;
     public readonly WindowSystem WindowSystem = new("ChatterShade");
     private ConfigWindow ConfigWindow { get; set; } = null!;
-    private bool standardBackgroundHiddenForDraw;
+    private bool nativeBackgroundHiddenForDraw;
 
     public async Task LoadAsync(CancellationToken cancellationtoken)
     {
@@ -89,7 +89,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         modifiedTextNode = 0;
         modifiedBackgroundNode = 0;
 
-        standardBackgroundHiddenForDraw = false;
+        nativeBackgroundHiddenForDraw = false;
 
         if (!Configuration.Enabled || args.Addon.IsNull || !args.Addon.IsReady)
             return;
@@ -145,13 +145,13 @@ public sealed class Plugin : IAsyncDalamudPlugin
             backgroundNode->DrawFlags |= 1;
 
             if (useSolidBackground &&
-                testBackgroundNode != null &&
-                testBackgroundAddon == args.Addon.Address &&
-                testBackgroundNodeId == modifiedBackgroundNodeId &&
-                testBackgroundNode.IsVisible)
+                replacementBackgroundNode != null &&
+                replacementBackgroundAddon == args.Addon.Address &&
+                replacementBackgroundNodeId == modifiedBackgroundNodeId &&
+                replacementBackgroundNode.IsVisible)
             {
                 backgroundNode->ToggleVisibility(false);
-                standardBackgroundHiddenForDraw = true;
+                nativeBackgroundHiddenForDraw = true;
             }
         }
     }
@@ -162,7 +162,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         {
             modifiedTextNode = 0;
             modifiedBackgroundNode = 0;
-            standardBackgroundHiddenForDraw = false;
+            nativeBackgroundHiddenForDraw = false;
             return;
         }
 
@@ -182,7 +182,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
             if (backgroundNode != null && (nint)backgroundNode == modifiedBackgroundNode)
             {
-                if (standardBackgroundHiddenForDraw)
+                if (nativeBackgroundHiddenForDraw)
                     backgroundNode->ToggleVisibility(true);
 
                 backgroundNode->SetAlpha(originalBackgroundColor.A);
@@ -194,12 +194,12 @@ public sealed class Plugin : IAsyncDalamudPlugin
         modifiedTextNode = 0;
         modifiedBackgroundNode = 0;
 
-        standardBackgroundHiddenForDraw = false;
+        nativeBackgroundHiddenForDraw = false;
     }
     private unsafe void OnTalkPostUpdate(AddonEvent type, AddonArgs args)
     {
-        if (testBackgroundNode != null)
-            testBackgroundNode.IsVisible = false;
+        if (replacementBackgroundNode != null)
+            replacementBackgroundNode.IsVisible = false;
 
         if (!Configuration.Enabled ||
             args.Addon.IsNull ||
@@ -238,62 +238,62 @@ public sealed class Plugin : IAsyncDalamudPlugin
         if (backgroundMode != DialogueBackgroundMode.SolidColor)
             return;
 
-        if (testBackgroundNode != null &&
-            testBackgroundNodeId != backgroundNodeId)
+        if (replacementBackgroundNode != null &&
+            replacementBackgroundNodeId != backgroundNodeId)
         {
-            DisposeTestBackground();
+            DisposeReplacementBackground();
         }
 
-        if (testBackgroundNode == null)
+        if (replacementBackgroundNode == null)
         {
-            testBackgroundNode = new ColorImageNode
+            replacementBackgroundNode = new ColorImageNode
             {
                 IsVisible = false
             };
 
-            testBackgroundAddon = args.Addon.Address;
-            testBackgroundNodeId = backgroundNodeId;
+            replacementBackgroundAddon = args.Addon.Address;
+            replacementBackgroundNodeId = backgroundNodeId;
 
-            testBackgroundNode.AttachNode(
+            replacementBackgroundNode.AttachNode(
                 backgroundNode,
                 NodePosition.AfterTarget);
         }
 
-        if (testBackgroundAddon != args.Addon.Address)
+        if (replacementBackgroundAddon != args.Addon.Address)
             return;
 
-        testBackgroundNode.Position =
+        replacementBackgroundNode.Position =
             new Vector2(backgroundNode->X, backgroundNode->Y);
 
-        testBackgroundNode.Size =
+        replacementBackgroundNode.Size =
             new Vector2(backgroundNode->Width, backgroundNode->Height);
 
-        testBackgroundNode.Scale =
+        replacementBackgroundNode.Scale =
             new Vector2(backgroundNode->ScaleX, backgroundNode->ScaleY);
 
-        testBackgroundNode.Origin =
+        replacementBackgroundNode.Origin =
             new Vector2(backgroundNode->OriginX, backgroundNode->OriginY);
 
         var panelColor = useDarkDialogueColors ? Configuration.DarkDialogueBackgroundTint : Configuration.DialogueBackgroundTint;
         panelColor.W = 1f;
-        testBackgroundNode.Color = panelColor;
+        replacementBackgroundNode.Color = panelColor;
 
-        testBackgroundNode.IsVisible = true;
-        testBackgroundNode.MarkDirty();
+        replacementBackgroundNode.IsVisible = true;
+        replacementBackgroundNode.MarkDirty();
     }
 
     private void OnTalkPreFinalize(AddonEvent type, AddonArgs args)
     {
-        if (args.Addon.Address == testBackgroundAddon)
-            DisposeTestBackground();
+        if (args.Addon.Address == replacementBackgroundAddon)
+            DisposeReplacementBackground();
     }
 
-    private void DisposeTestBackground()
+    private void DisposeReplacementBackground()
     {
-        testBackgroundNode?.Dispose();
-        testBackgroundNode = null;
-        testBackgroundAddon = 0;
-        testBackgroundNodeId = 0;
+        replacementBackgroundNode?.Dispose();
+        replacementBackgroundNode = null;
+        replacementBackgroundAddon = 0;
+        replacementBackgroundNodeId = 0;
     }
 
     private static ByteColor ToByteColor(Vector4 color)
@@ -315,7 +315,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
             AddonLifecycle.UnregisterListener(AddonEvent.PostUpdate, "Talk", OnTalkPostUpdate);
             AddonLifecycle.UnregisterListener(AddonEvent.PreFinalize, "Talk", OnTalkPreFinalize);
 
-            DisposeTestBackground();
+            DisposeReplacementBackground();
         });
 
         AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, "Talk", OnTalkPreDraw);
