@@ -224,6 +224,10 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         var useDarkDialogueColors = backgroundNodeId == 18;
 
+        if (backgroundNode == null || backgroundNode->Type != NodeType.Image ||
+            !backgroundNode->IsVisible())
+            return;
+
         var styleEnabled = useDarkDialogueColors
             ? Configuration.DarkDialogueEnabled
             : Configuration.StandardDialogueEnabled;
@@ -262,9 +266,9 @@ public sealed class Plugin : IAsyncDalamudPlugin
         if (replacementBackgroundAddon != args.Addon.Address)
             return;
 
-        var horizontalInset = useDarkDialogueColors ? 0f : 24f;
-        var topInset = useDarkDialogueColors ? 0f : 24f;
-        var bottomInset = useDarkDialogueColors ? 0f : 20f;
+        const float horizontalInset = 24f;
+        const float topInset = 24f;
+        const float bottomInset = 20f;
 
         replacementBackgroundNode.Position =
             new Vector2(backgroundNode->X + horizontalInset * backgroundNode->ScaleX,
@@ -318,14 +322,14 @@ public sealed class Plugin : IAsyncDalamudPlugin
     {
         await Framework.RunOnFrameworkThread(() =>
         {
+            AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, "Talk", OnTalkPreDraw);
+            AddonLifecycle.UnregisterListener(AddonEvent.PostDraw, "Talk", OnTalkPostDraw);
             AddonLifecycle.UnregisterListener(AddonEvent.PostUpdate, "Talk", OnTalkPostUpdate);
             AddonLifecycle.UnregisterListener(AddonEvent.PreFinalize, "Talk", OnTalkPreFinalize);
 
             DisposeReplacementBackground();
         });
-
-        AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, "Talk", OnTalkPreDraw);
-        AddonLifecycle.UnregisterListener(AddonEvent.PostDraw, "Talk", OnTalkPostDraw);
+        
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleConfigUi;
