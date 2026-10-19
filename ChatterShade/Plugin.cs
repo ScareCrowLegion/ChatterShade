@@ -42,6 +42,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
     private const string CommandName = "/cshade";
     private bool commandRegistered;
+    private bool toolkitInitializationStarted;
     private ColorImageNode? replacementBackgroundNode;
     private nint replacementBackgroundAddon;
     private uint replacementBackgroundNodeId;
@@ -53,6 +54,8 @@ public sealed class Plugin : IAsyncDalamudPlugin
     public async Task LoadAsync(CancellationToken cancellationtoken)
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+
+        toolkitInitializationStarted = true;
 
         await KamiToolKitLibrary.InitializeAsync(PluginInterface, "ChatterShade");
         Log.Information("ChatterShade: KamiToolKit initialization completed.");
@@ -344,7 +347,11 @@ public sealed class Plugin : IAsyncDalamudPlugin
             CommandManager.RemoveHandler(CommandName);
                 commandRegistered = false;
         }
-        await KamiToolKitLibrary.DisposeAsync();
+        if (toolkitInitializationStarted)
+        {
+            await KamiToolKitLibrary.DisposeAsync();
+            toolkitInitializationStarted = false;
+        }
 
     }
 
