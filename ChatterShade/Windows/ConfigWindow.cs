@@ -147,7 +147,7 @@ public class ConfigWindow : Window, IDisposable
             configuration.Save();
         }
 
-        ImGui.TextWrapped("Standard dialogue uses a solid background. Dark dialogue tint blends with your current UI texture.");
+        ImGui.TextWrapped("Each dialogue style has separate text and solid background colors.");
         ImGui.Spacing();
 
         var movable = configuration.IsConfigWindowMovable;
