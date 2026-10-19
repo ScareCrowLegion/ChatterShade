@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using KamiToolKit;
 using KamiToolKit.Nodes;
 using KamiToolKit.Enums;
+using System.IO;
 
 namespace ChatterShade;
 
@@ -43,7 +44,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     private const string CommandName = "/cshade";
     private bool commandRegistered;
     private bool toolkitInitializationStarted;
-    private ColorImageNode? replacementBackgroundNode;
+    private ImGuiImageNode? replacementBackgroundNode;
     private nint replacementBackgroundAddon;
     private uint replacementBackgroundNodeId;
     public Configuration Configuration { get; private set; } = null!;
@@ -254,9 +255,10 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         if (replacementBackgroundNode == null)
         {
-            replacementBackgroundNode = new ColorImageNode
+            replacementBackgroundNode = new ImGuiImageNode
             {
-                IsVisible = false
+                IsVisible = false,
+                FitTexture = true
             };
 
             replacementBackgroundAddon = args.Addon.Address;
@@ -265,6 +267,13 @@ public sealed class Plugin : IAsyncDalamudPlugin
             replacementBackgroundNode.AttachNode(
                 backgroundNode,
                 NodePosition.AfterTarget);
+
+            var imagePath = Path.Combine(
+                PluginInterface.AssemblyLocation.DirectoryName!,
+                "Data",
+                "dialogue-background.png");
+
+            replacementBackgroundNode.TexturePath = imagePath;
         }
 
         if (replacementBackgroundAddon != args.Addon.Address)
