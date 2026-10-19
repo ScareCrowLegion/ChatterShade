@@ -2,4 +2,7 @@
   <Project Path="ChatterShade/ChatterShade.csproj">
     <Platform Project="x64" />
   </Project>
+  <Project Path="KamiToolKit/KamiToolKit.csproj">
+  <Platform Project="x64" />
+</Project>
 </Solution>

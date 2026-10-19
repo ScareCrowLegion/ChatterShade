@@ -11,10 +11,15 @@ using System.Numerics;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
+using System.Threading;
+using System.Threading.Tasks;
+using KamiToolKit;
+using KamiToolKit.Nodes;
+using KamiToolKit.Enums;
 
 namespace ChatterShade;
 
-public sealed class Plugin : IDalamudPlugin
+public sealed class Plugin : IAsyncDalamudPlugin
 {
     [PluginService] 
     internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
@@ -32,21 +37,32 @@ public sealed class Plugin : IDalamudPlugin
     internal static IPluginLog Log { get; private set; } = null!;
     [PluginService]
     internal static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
+    [PluginService]
+    internal static IFramework Framework { get; private set; } = null!;
 
     private const string CommandName = "/cshade";
-
-    public Configuration Configuration { get; init; }
-
+    private ColorImageNode? testBackgroundNode;
+    private nint testBackgroundAddon;
+    private uint testBackgroundNodeId;
+    public Configuration Configuration { get; private set; } = null!;
     public readonly WindowSystem WindowSystem = new("ChatterShade");
-    private ConfigWindow ConfigWindow { get; init; }
+    private ConfigWindow ConfigWindow { get; set; } = null!;
+    private bool standardBackgroundHiddenForDraw;
 
-    public Plugin()
+    public async Task LoadAsync(CancellationToken cancellationtoken)
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+
+        await KamiToolKitLibrary.InitializeAsync(PluginInterface, "ChatterShade");
+        Log.Information("ChatterShade: KamiToolKit initialization completed.");
 
         AddonLifecycle.RegisterListener(AddonEvent.PreDraw, "Talk", OnTalkPreDraw);
 
         AddonLifecycle.RegisterListener(AddonEvent.PostDraw, "Talk", OnTalkPostDraw);
+
+        AddonLifecycle.RegisterListener(AddonEvent.PostUpdate, "Talk", OnTalkPostUpdate);
+
+        AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, "Talk", OnTalkPreFinalize);
 
         ConfigWindow = new ConfigWindow(this);
 
@@ -66,17 +82,14 @@ public sealed class Plugin : IDalamudPlugin
 
         // Adds another button doing the same but for the main ui of the plugin
         PluginInterface.UiBuilder.OpenMainUi += ToggleConfigUi;
-
-        // Add a simple message to the log with level set to information
-        // Use /xllog to open the log window in-game
-        // Example Output: 00:57:54.959 | INF | [SamplePlugin] ===A cool log message from Sample Plugin===
-        Log.Information("ChatterShade loaded.");
     }
 
     private unsafe void OnTalkPreDraw(AddonEvent type, AddonArgs args)
     {
         modifiedTextNode = 0;
         modifiedBackgroundNode = 0;
+
+        standardBackgroundHiddenForDraw = false;
 
         if (!Configuration.Enabled || args.Addon.IsNull || !args.Addon.IsReady)
             return;
@@ -128,6 +141,15 @@ public sealed class Plugin : IDalamudPlugin
             backgroundNode->SetAlpha(tint.A);
             backgroundNode->Color = tint;
             backgroundNode->DrawFlags |= 1;
+
+            if (testBackgroundNode != null &&
+                testBackgroundAddon == args.Addon.Address &&
+                testBackgroundNodeId == modifiedBackgroundNodeId &&
+                testBackgroundNode.IsVisible)
+            {
+                backgroundNode->ToggleVisibility(false);
+                standardBackgroundHiddenForDraw = true;
+            }
         }
     }
 
@@ -137,6 +159,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             modifiedTextNode = 0;
             modifiedBackgroundNode = 0;
+            standardBackgroundHiddenForDraw = false;
             return;
         }
 
@@ -156,6 +179,9 @@ public sealed class Plugin : IDalamudPlugin
 
             if (backgroundNode != null && (nint)backgroundNode == modifiedBackgroundNode)
             {
+                if (standardBackgroundHiddenForDraw)
+                    backgroundNode->ToggleVisibility(true);
+
                 backgroundNode->SetAlpha(originalBackgroundColor.A);
                 backgroundNode->Color = originalBackgroundColor;
                 backgroundNode->DrawFlags |= 1;
@@ -164,6 +190,100 @@ public sealed class Plugin : IDalamudPlugin
 
         modifiedTextNode = 0;
         modifiedBackgroundNode = 0;
+
+        standardBackgroundHiddenForDraw = false;
+    }
+    private unsafe void OnTalkPostUpdate(AddonEvent type, AddonArgs args)
+    {
+        if (testBackgroundNode != null)
+            testBackgroundNode.IsVisible = false;
+
+        if (!Configuration.Enabled ||
+            args.Addon.IsNull ||
+            !args.Addon.IsReady)
+            return;
+
+        var addon = (AtkUnitBase*)args.Addon.Address;
+
+        uint backgroundNodeId = 13;
+        var backgroundNode = addon->GetNodeById(backgroundNodeId);
+
+        if (backgroundNode == null || !backgroundNode->IsVisible())
+        {
+            backgroundNodeId = 18;
+            backgroundNode = addon->GetNodeById(backgroundNodeId);
+        }
+
+        if (backgroundNode == null ||
+            backgroundNode->Type != NodeType.Image ||
+            !backgroundNode->IsVisible())
+            return;
+
+        var useDarkDialogueColors = backgroundNodeId == 18;
+
+        var styleEnabled = useDarkDialogueColors
+            ? Configuration.DarkDialogueEnabled
+            : Configuration.StandardDialogueEnabled;
+
+        if (!styleEnabled)
+            return;
+
+        if (testBackgroundNode != null &&
+            testBackgroundNodeId != backgroundNodeId)
+        {
+            DisposeTestBackground();
+        }
+
+        if (testBackgroundNode == null)
+        {
+            testBackgroundNode = new ColorImageNode
+            {
+                IsVisible = false
+            };
+
+            testBackgroundAddon = args.Addon.Address;
+            testBackgroundNodeId = backgroundNodeId;
+
+            testBackgroundNode.AttachNode(
+                backgroundNode,
+                NodePosition.AfterTarget);
+        }
+
+        if (testBackgroundAddon != args.Addon.Address)
+            return;
+
+        testBackgroundNode.Position =
+            new Vector2(backgroundNode->X, backgroundNode->Y);
+
+        testBackgroundNode.Size =
+            new Vector2(backgroundNode->Width, backgroundNode->Height);
+
+        testBackgroundNode.Scale =
+            new Vector2(backgroundNode->ScaleX, backgroundNode->ScaleY);
+
+        testBackgroundNode.Origin =
+            new Vector2(backgroundNode->OriginX, backgroundNode->OriginY);
+
+        var panelColor = useDarkDialogueColors ? Configuration.DarkDialogueBackgroundTint : Configuration.DialogueBackgroundTint;
+        panelColor.W = 1f;
+        testBackgroundNode.Color = panelColor;
+
+        testBackgroundNode.IsVisible = true;
+        testBackgroundNode.MarkDirty();
+    }
+
+    private void OnTalkPreFinalize(AddonEvent type, AddonArgs args)
+    {
+        if (args.Addon.Address == testBackgroundAddon)
+            DisposeTestBackground();
+    }
+
+    private void DisposeTestBackground()
+    {
+        testBackgroundNode?.Dispose();
+        testBackgroundNode = null;
+        testBackgroundAddon = 0;
+        testBackgroundNodeId = 0;
     }
 
     private static ByteColor ToByteColor(Vector4 color)
@@ -178,8 +298,16 @@ public sealed class Plugin : IDalamudPlugin
     }
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
+        await Framework.RunOnFrameworkThread(() =>
+        {
+            AddonLifecycle.UnregisterListener(AddonEvent.PostUpdate, "Talk", OnTalkPostUpdate);
+            AddonLifecycle.UnregisterListener(AddonEvent.PreFinalize, "Talk", OnTalkPreFinalize);
+
+            DisposeTestBackground();
+        });
+
         AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, "Talk", OnTalkPreDraw);
         AddonLifecycle.UnregisterListener(AddonEvent.PostDraw, "Talk", OnTalkPostDraw);
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
@@ -188,9 +316,12 @@ public sealed class Plugin : IDalamudPlugin
         
         WindowSystem.RemoveAllWindows();
 
-        ConfigWindow.Dispose();
+        ConfigWindow?.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
+
+        await KamiToolKitLibrary.DisposeAsync();
+
     }
 
 

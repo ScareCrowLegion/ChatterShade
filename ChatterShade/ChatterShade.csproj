@@ -17,4 +17,7 @@
       <Visible>false</Visible>
     </Content>
   </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\KamiToolKit\KamiToolKit.csproj"/>
+    </ItemGroup>
 </Project>

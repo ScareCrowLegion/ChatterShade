@@ -78,7 +78,7 @@ public class ConfigWindow : Window, IDisposable
         }
 
         var backgroundTint = configuration.DialogueBackgroundTint;
-        if (ImGui.ColorEdit4("Background tint", ref backgroundTint, ImGuiColorEditFlags.NoAlpha))
+        if (ImGui.ColorEdit4("Background color", ref backgroundTint, ImGuiColorEditFlags.NoAlpha))
         {
             configuration.DialogueBackgroundTint = backgroundTint;
             configuration.Save();
@@ -141,13 +141,13 @@ public class ConfigWindow : Window, IDisposable
                 new Vector4(242f / 255f, 242f / 255f, 242f / 255f, 1f);
 
             configuration.DarkDialogueBackgroundTint =
-                new Vector4(1f, 1f, 1f, 1f);
+                new Vector4(48f / 255f, 48f / 255f, 48f / 255f, 1f);
 
             configuration.DarkDialogueEnabled = true;
             configuration.Save();
         }
 
-        ImGui.TextWrapped("Background tint blends with your current UI texture.");
+        ImGui.TextWrapped("Standard dialogue uses a solid background. Dark dialogue tint blends with your current UI texture.");
         ImGui.Spacing();
 
         var movable = configuration.IsConfigWindowMovable;

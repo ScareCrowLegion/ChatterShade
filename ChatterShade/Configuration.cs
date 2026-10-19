@@ -23,7 +23,7 @@ public class Configuration : IPluginConfiguration
         new(242f / 255f, 242f / 255f, 242f / 255f, 1f);
 
     public Vector4 DarkDialogueBackgroundTint { get; set; } =
-        new(1f, 1f, 1f, 1f);
+        new(48f / 255f, 48f / 255f, 48f / 255f, 1f);
 
     // The below exists just to make saving less cumbersome
     public void Save()
