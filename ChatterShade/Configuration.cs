@@ -3,7 +3,7 @@ using System.Numerics;
 using System;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 
-namespace DialogueReadability;
+namespace ChatterShade;
 
 [Serializable]
 public class Configuration : IPluginConfiguration

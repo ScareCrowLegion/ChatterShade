@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="SamplePlugin/DialogueReadability.csproj">
+  <Project Path="ChatterShade/ChatterShade.csproj">
     <Platform Project="x64" />
   </Project>
 </Solution>

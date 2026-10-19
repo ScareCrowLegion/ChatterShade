@@ -3,7 +3,7 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
-using DialogueReadability.Windows;
+using ChatterShade.Windows;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using System;
@@ -12,7 +12,7 @@ using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 
-namespace DialogueReadability;
+namespace ChatterShade;
 
 public sealed class Plugin : IDalamudPlugin
 {
@@ -37,7 +37,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public Configuration Configuration { get; init; }
 
-    public readonly WindowSystem WindowSystem = new("DialogueReadability");
+    public readonly WindowSystem WindowSystem = new("ChatterShade");
     private ConfigWindow ConfigWindow { get; init; }
 
     public Plugin()
@@ -70,7 +70,7 @@ public sealed class Plugin : IDalamudPlugin
         // Add a simple message to the log with level set to information
         // Use /xllog to open the log window in-game
         // Example Output: 00:57:54.959 | INF | [SamplePlugin] ===A cool log message from Sample Plugin===
-        Log.Information($"===A cool log message from {PluginInterface.Manifest.Name}===");
+        Log.Information("ChatterShade loaded.");
     }
 
     private unsafe void OnTalkPreDraw(AddonEvent type, AddonArgs args)
