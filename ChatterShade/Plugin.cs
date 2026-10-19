@@ -41,6 +41,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     internal static IFramework Framework { get; private set; } = null!;
 
     private const string CommandName = "/cshade";
+    private bool commandRegistered;
     private ColorImageNode? replacementBackgroundNode;
     private nint replacementBackgroundAddon;
     private uint replacementBackgroundNodeId;
@@ -68,7 +69,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         WindowSystem.AddWindow(ConfigWindow);
 
-        CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
+        commandRegistered = CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
             HelpMessage = "Open the ChatterShade settings."
         });
@@ -338,8 +339,11 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         ConfigWindow?.Dispose();
 
-        CommandManager.RemoveHandler(CommandName);
-
+        if (commandRegistered)
+        {
+            CommandManager.RemoveHandler(CommandName);
+                commandRegistered = false;
+        }
         await KamiToolKitLibrary.DisposeAsync();
 
     }
