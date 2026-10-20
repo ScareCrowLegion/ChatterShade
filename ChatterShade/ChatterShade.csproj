@@ -5,7 +5,7 @@
     <!-- Manifest fields (see https://github.com/goatcorp/DalamudPackager/blob/827d88dc/DalamudPackager/DalamudPackager.cs#L420) -->
       <Author>ScareCrowLegion</Author>
       <Name>ChatterShade</Name>
-      <Punchline>Customiz NPC dialogue text and background colors.</Punchline>
+      <Punchline>Customize dialogue text and background colors.</Punchline>
       <Description>Adjust NPC dialogue colors for improved readability.</Description>
       <RepoUrl>https://github.com/ScareCrowLegion/ChatterShade</RepoUrl>
       <Tags>dialogue;ui;accessibility</Tags>
