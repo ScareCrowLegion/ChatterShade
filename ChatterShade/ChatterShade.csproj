@@ -10,13 +10,7 @@
       <RepoUrl>https://github.com/ScareCrowLegion/ChatterShade</RepoUrl>
       <Tags>dialogue;ui;accessibility</Tags>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Include="..\Data\goat.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-  </ItemGroup>
+    
     <ItemGroup>
         <ProjectReference Include="..\KamiToolKit\KamiToolKit.csproj"/>
     </ItemGroup>
