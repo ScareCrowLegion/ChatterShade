@@ -108,6 +108,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
             return;
 
         modifiedBackgroundNodeId = 13;
+
         var backgroundNode = addon->GetNodeById(modifiedBackgroundNodeId);
 
         if (backgroundNode == null || !backgroundNode->IsVisible())
@@ -115,6 +116,11 @@ public sealed class Plugin : IAsyncDalamudPlugin
             modifiedBackgroundNodeId = 18;
             backgroundNode = addon->GetNodeById(modifiedBackgroundNodeId);
         }
+
+        if (backgroundNode == null ||
+             backgroundNode->Type != NodeType.Image ||
+            !backgroundNode->IsVisible())
+             return;
 
         var useDarkDialogueColors =
             modifiedBackgroundNodeId == 18 &&
@@ -263,10 +269,6 @@ public sealed class Plugin : IAsyncDalamudPlugin
             return;
 
         var useDarkDialogueColors = backgroundNodeId == 18;
-
-        if (backgroundNode == null || backgroundNode->Type != NodeType.Image ||
-            !backgroundNode->IsVisible())
-            return;
 
         var styleEnabled = useDarkDialogueColors
             ? Configuration.DarkDialogueEnabled
