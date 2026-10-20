@@ -26,6 +26,7 @@ public class Configuration : IPluginConfiguration
     public float DarkBackgroundOpacity { get; set; } = 1f;
     public Vector4 DialogueTextColor { get; set; } =
         new(242f / 255f, 242f / 255f, 242f / 255f, 1f);
+    public bool NpcNameColorEnabled { get; set; } = true;
     public Vector4 NpcNameColor { get; set; } =
         new(1f, 1f, 1f, 1f);
     public Vector4 DialogueBackgroundTint { get; set; } =

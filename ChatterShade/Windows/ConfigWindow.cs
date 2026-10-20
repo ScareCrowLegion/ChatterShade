@@ -95,6 +95,13 @@ public override void Draw()
                 configuration.Save();
             }
 
+            var npcNameEnabled = configuration.NpcNameColorEnabled;
+            if (ImGui.Checkbox("Customize NPC names", ref npcNameEnabled))
+            {
+                configuration.NpcNameColorEnabled = npcNameEnabled;
+                configuration.Save();
+            }
+
             var textColor = configuration.DialogueTextColor;
             if (ImGui.ColorEdit4(
                     "Dialogue text",

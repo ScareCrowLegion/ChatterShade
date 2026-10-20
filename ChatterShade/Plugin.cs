@@ -126,21 +126,33 @@ public sealed class Plugin : IAsyncDalamudPlugin
             ? Configuration.DarkDialogueEnabled
             : Configuration.StandardDialogueEnabled;
 
-        if (!styleEnabled)
+        // NPC names have their own customization setting.
+        var customizeNpcName =
+            !useDarkDialogueColors &&
+            Configuration.NpcNameColorEnabled;
+
+        // Continue if either dialogue customization or NPC name customization is active.
+
+        if (!styleEnabled && !customizeNpcName)
             return;
 
         var useSolidBackground = (useDarkDialogueColors ? Configuration.DarkBackgroundMode : Configuration.StandardBackgroundMode) == DialogueBackgroundMode.SolidColor;
 
-        originalTextColor = textNode->TextColor;
-        modifiedTextNode = (nint)textNode;
+        if (styleEnabled)
+        {
+            originalTextColor = textNode->TextColor;
+            modifiedTextNode = (nint)textNode;
 
-        textNode->TextColor = ToByteColor(
-            useDarkDialogueColors
-               ? Configuration.DarkDialogueTextColor
-               : Configuration.DialogueTextColor);
-        
+            textNode->TextColor = ToByteColor(
+                useDarkDialogueColors
+                     ? Configuration.DarkDialogueTextColor
+                     : Configuration.DialogueTextColor);
+        }
+
         // Temporary NPC name recoloring test.
-        if (npcNameNode != null && npcNameNode->IsVisible())
+        if (customizeNpcName &&
+            npcNameNode != null &&
+            npcNameNode->IsVisible())
         {
             originalNpcNameColor = npcNameNode->TextColor;
             modifiedNpcNameNode = (nint)npcNameNode;
@@ -148,7 +160,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
             npcNameNode->TextColor = ToByteColor(Configuration.NpcNameColor);
         }
 
-        if (backgroundNode != null && backgroundNode->Type == NodeType.Image && backgroundNode->IsVisible())
+        if (styleEnabled && backgroundNode != null && backgroundNode->Type == NodeType.Image && backgroundNode->IsVisible())
         {
             originalBackgroundColor = backgroundNode->Color;
             modifiedBackgroundNode = (nint)backgroundNode;
