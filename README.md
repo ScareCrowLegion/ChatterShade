@@ -16,9 +16,7 @@ Use `/cshade` to open the settings.
 
 ## Status
 
-Still in development. The latest changes are waiting on in-game testing once Dalamud is available after the game update.
-
-Installation instructions will be added when a testing release is ready.
+Still in development. The latest changes have passed local in-game testing.
 
 ## Credits
 
