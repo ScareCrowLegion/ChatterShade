@@ -316,6 +316,10 @@ public sealed class Plugin : IAsyncDalamudPlugin
         if (replacementBackgroundAddon != args.Addon.Address)
             return;
 
+        var textureSize = replacementBackgroundNode.ActualTextureSize;
+        if (textureSize.X <= 0f || textureSize.Y <= 0f)
+            return;
+
         const float horizontalInset = 24f;
         const float topInset = 24f;
         const float bottomInset = 20f;
