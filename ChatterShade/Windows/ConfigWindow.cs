@@ -50,7 +50,8 @@ public class ConfigWindow : Window, IDisposable
     }
 
 
-public override void Draw()
+
+    public override void Draw()
     {
         // Global enable setting
         var enabled = configuration.Enabled;
@@ -85,23 +86,6 @@ public override void Draw()
                 configuration.Save();
             }
 
-            var npcNameColor = configuration.NpcNameColor;
-            if (ImGui.ColorEdit4(
-                     "NPC name color",
-                     ref npcNameColor,
-                     ImGuiColorEditFlags.NoAlpha))
-            {
-                configuration.NpcNameColor = npcNameColor;
-                configuration.Save();
-            }
-
-            var npcNameEnabled = configuration.NpcNameColorEnabled;
-            if (ImGui.Checkbox("Customize NPC names", ref npcNameEnabled))
-            {
-                configuration.NpcNameColorEnabled = npcNameEnabled;
-                configuration.Save();
-            }
-
             var textColor = configuration.DialogueTextColor;
             if (ImGui.ColorEdit4(
                     "Dialogue text",
@@ -131,6 +115,7 @@ public override void Draw()
             if (configuration.StandardBackgroundMode == DialogueBackgroundMode.SolidColor)
             {
                 var opacity = configuration.StandardBackgroundOpacity * 100f;
+
                 if (ImGui.SliderFloat(
                         "Background opacity##Standard",
                         ref opacity,
@@ -155,9 +140,6 @@ public override void Draw()
 
             if (ImGui.Button("Use Dark Preset##Standard"))
             {
-                configuration.NpcNameColor =
-                    new Vector4(1f, 1f, 1f, 1f);
-
                 configuration.DialogueTextColor =
                     new Vector4(242f / 255f, 242f / 255f, 242f / 255f, 1f);
 
@@ -166,8 +148,10 @@ public override void Draw()
 
                 configuration.StandardBackgroundMode =
                     DialogueBackgroundMode.SolidColor;
+
                 configuration.StandardBackgroundOpacity = 1f;
                 configuration.StandardDialogueEnabled = true;
+
                 configuration.Save();
             }
         }
@@ -227,6 +211,7 @@ public override void Draw()
             if (configuration.DarkBackgroundMode == DialogueBackgroundMode.SolidColor)
             {
                 var opacity = configuration.DarkBackgroundOpacity * 100f;
+
                 if (ImGui.SliderFloat(
                         "Background opacity##Dark",
                         ref opacity,
@@ -251,18 +236,61 @@ public override void Draw()
 
             if (ImGui.Button("Use Dark Preset##Dark"))
             {
-                configuration.DialogueTextColor =
+                configuration.DarkDialogueTextColor =
                     new Vector4(242f / 255f, 242f / 255f, 242f / 255f, 1f);
 
-                configuration.DialogueBackgroundTint =
+                configuration.DarkDialogueBackgroundTint =
                     new Vector4(48f / 255f, 48f / 255f, 48f / 255f, 1f);
 
-                configuration.StandardBackgroundMode =
+                configuration.DarkBackgroundMode =
                     DialogueBackgroundMode.SolidColor;
 
-                configuration.StandardBackgroundOpacity = 1f;
-                configuration.StandardDialogueEnabled = true;
+                configuration.DarkBackgroundOpacity = 1f;
+                configuration.DarkDialogueEnabled = true;
 
+                configuration.Save();
+            }
+        }
+
+        ImGui.Spacing();
+        ImGui.Separator();
+
+        // Independent NPC Name Customization section
+        if (ImGui.CollapsingHeader(
+                "NPC Name Customization",
+                ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            var npcNameEnabled = configuration.NpcNameColorEnabled;
+            if (ImGui.Checkbox("Customize NPC names", ref npcNameEnabled))
+            {
+                configuration.NpcNameColorEnabled = npcNameEnabled;
+                configuration.Save();
+            }
+
+            var npcNameColor = configuration.NpcNameColor;
+            if (ImGui.ColorEdit4(
+                    "NPC name color",
+                    ref npcNameColor,
+                    ImGuiColorEditFlags.NoAlpha))
+            {
+                configuration.NpcNameColor = npcNameColor;
+                configuration.Save();
+            }
+
+            ImGui.Spacing();
+
+            if (ImGui.Button("Restore Original Name##NPC"))
+            {
+                configuration.NpcNameColorEnabled = false;
+                configuration.Save();
+            }
+
+            ImGui.SameLine();
+
+            if (ImGui.Button("Use White Preset##NPC"))
+            {
+                configuration.NpcNameColor = new Vector4(1f, 1f, 1f, 1f);
+                configuration.NpcNameColorEnabled = true;
                 configuration.Save();
             }
         }
