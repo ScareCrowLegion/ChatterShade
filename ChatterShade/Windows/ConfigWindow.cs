@@ -85,6 +85,16 @@ public override void Draw()
                 configuration.Save();
             }
 
+            var npcNameColor = configuration.NpcNameColor;
+            if (ImGui.ColorEdit4(
+                     "NPC name color",
+                     ref npcNameColor,
+                     ImGuiColorEditFlags.NoAlpha))
+            {
+                configuration.NpcNameColor = npcNameColor;
+                configuration.Save();
+            }
+
             var textColor = configuration.DialogueTextColor;
             if (ImGui.ColorEdit4(
                     "Dialogue text",
@@ -138,6 +148,9 @@ public override void Draw()
 
             if (ImGui.Button("Use Dark Preset##Standard"))
             {
+                configuration.NpcNameColor =
+                    new Vector4(1f, 1f, 1f, 1f);
+
                 configuration.DialogueTextColor =
                     new Vector4(242f / 255f, 242f / 255f, 242f / 255f, 1f);
 
@@ -231,16 +244,18 @@ public override void Draw()
 
             if (ImGui.Button("Use Dark Preset##Dark"))
             {
-                configuration.DarkDialogueTextColor =
+                configuration.DialogueTextColor =
                     new Vector4(242f / 255f, 242f / 255f, 242f / 255f, 1f);
 
-                configuration.DarkDialogueBackgroundTint =
+                configuration.DialogueBackgroundTint =
                     new Vector4(48f / 255f, 48f / 255f, 48f / 255f, 1f);
 
-                configuration.DarkBackgroundMode =
+                configuration.StandardBackgroundMode =
                     DialogueBackgroundMode.SolidColor;
-                configuration.DarkBackgroundOpacity = 1f;
-                configuration.DarkDialogueEnabled = true;
+
+                configuration.StandardBackgroundOpacity = 1f;
+                configuration.StandardDialogueEnabled = true;
+
                 configuration.Save();
             }
         }

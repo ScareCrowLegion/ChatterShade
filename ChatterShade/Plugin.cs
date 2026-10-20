@@ -93,6 +93,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     {
         modifiedTextNode = 0;
         modifiedBackgroundNode = 0;
+        modifiedNpcNameNode = 0;
 
         nativeBackgroundHiddenForDraw = false;
 
@@ -101,6 +102,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         var addon = (AtkUnitBase*)args.Addon.Address;
         var textNode = addon->GetTextNodeById(3);
+        var npcNameNode = addon->GetTextNodeById(2);
 
         if (textNode == null)
             return;
@@ -136,6 +138,15 @@ public sealed class Plugin : IAsyncDalamudPlugin
             useDarkDialogueColors
                ? Configuration.DarkDialogueTextColor
                : Configuration.DialogueTextColor);
+        
+        // Temporary NPC name recoloring test.
+        if (npcNameNode != null && npcNameNode->IsVisible())
+        {
+            originalNpcNameColor = npcNameNode->TextColor;
+            modifiedNpcNameNode = (nint)npcNameNode;
+
+            npcNameNode->TextColor = ToByteColor(Configuration.NpcNameColor);
+        }
 
         if (backgroundNode != null && backgroundNode->Type == NodeType.Image && backgroundNode->IsVisible())
         {
@@ -166,6 +177,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         if (args.Addon.IsNull)
         {
             modifiedTextNode = 0;
+            modifiedNpcNameNode = 0;
             modifiedBackgroundNode = 0;
             nativeBackgroundHiddenForDraw = false;
             return;
@@ -181,6 +193,16 @@ public sealed class Plugin : IAsyncDalamudPlugin
                 textNode->TextColor = originalTextColor;
         }
 
+        // Restore original NPC name color.
+        if (modifiedNpcNameNode != 0)
+        {
+            var npcNameNode = addon->GetTextNodeById(2);
+
+            if (npcNameNode != null && (nint)npcNameNode == modifiedNpcNameNode)
+            {
+                npcNameNode->TextColor = originalNpcNameColor;
+            }
+        }
         if (modifiedBackgroundNode != 0)
         {
             var backgroundNode = addon->GetNodeById(modifiedBackgroundNodeId);
@@ -197,6 +219,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         }
 
         modifiedTextNode = 0;
+        modifiedNpcNameNode = 0;
         modifiedBackgroundNode = 0;
 
         nativeBackgroundHiddenForDraw = false;
@@ -372,6 +395,8 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
     private nint modifiedTextNode;
     private ByteColor originalTextColor;
+    private nint modifiedNpcNameNode;
+    private ByteColor originalNpcNameColor;
     private nint modifiedBackgroundNode;
     private ByteColor originalBackgroundColor;
     private uint modifiedBackgroundNodeId;
