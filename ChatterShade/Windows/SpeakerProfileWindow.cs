@@ -21,10 +21,7 @@ public class SpeakerProfileWindow : Window, IDisposable
     public SpeakerProfileWindow(Plugin plugin)
         : base("Speaker Profile Editor###ChatterShadeSpeakerProfiles")
     {
-        Size = new Vector2(650, 450);
-        SizeCondition = ImGuiCond.FirstUseEver;
-
-        Flags = ImGuiWindowFlags.NoCollapse;
+        Flags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize;
 
         configuration = plugin.Configuration;
     }
@@ -82,19 +79,65 @@ public class SpeakerProfileWindow : Window, IDisposable
 
         ImGui.Spacing();
 
-        ImGui.SetNextItemWidth(-1f);
+        ImGui.SetNextItemWidth(
+            string.IsNullOrEmpty(speakerSearch)
+            ? -1f
+             : ImGui.GetContentRegionAvail().X
+              - 55f
+              - ImGui.GetStyle().ItemSpacing.X);
+
         ImGui.InputTextWithHint(
             "##SpeakerSearch",
             "Search speaker profiles...",
             ref speakerSearch,
             100);
 
+        if (!string.IsNullOrEmpty(speakerSearch))
+        {
+            ImGui.SameLine();
+
+            if (ImGui.Button("Clear##SpeakerSearch"))
+            {
+                speakerSearch = string.Empty;
+            }
+        }
+
         ImGui.Spacing();
+
+        var matchingProfileCount = 0;
+
+        var visibleProfileCount = 0;
+
+        foreach (var profile in profiles)
+        {
+            if (profile == null)
+                continue;
+
+            var displayName = string.IsNullOrWhiteSpace(profile.SpeakerName)
+                ? "Unnamed Speaker"
+                : profile.SpeakerName;
+
+            if (!string.IsNullOrWhiteSpace(speakerSearch) &&
+                !displayName.Contains(
+                    speakerSearch.Trim(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            visibleProfileCount++;
+        }
+
+        // Allow space for at least three rows and up to eight rows.
+        var rowHeight = ImGui.GetFrameHeightWithSpacing();
+        var displayedRows = Math.Clamp(visibleProfileCount, 3, 8);
+        var profileListHeight = displayedRows * rowHeight
+                               + ImGui.GetStyle().WindowPadding.Y * 2f;
 
         // Profile selection list.
         if (ImGui.BeginChild(
                 "SpeakerProfileList",
-                new Vector2(0, 220),
+                new Vector2(0, profileListHeight),
                 true))
         {
             for (var i = 0; i < profiles.Count; i++)
@@ -119,6 +162,8 @@ public class SpeakerProfileWindow : Window, IDisposable
                 }
 
                 // Only matching profiles reach this point.
+                matchingProfileCount++;
+
                 ImGui.PushID(i);
 
                 ImGui.ColorButton(
@@ -144,6 +189,13 @@ public class SpeakerProfileWindow : Window, IDisposable
 
                 ImGui.PopID();
             }
+
+            if (matchingProfileCount == 0 &&
+                profiles.Count > 0 &&
+                !string.IsNullOrWhiteSpace(speakerSearch))
+            {
+                ImGui.TextDisabled("No matching speaker profiles found.");
+            }
         }
 
         ImGui.EndChild();
@@ -151,9 +203,17 @@ public class SpeakerProfileWindow : Window, IDisposable
         ImGui.Spacing();
         ImGui.Separator();
 
+        // Visibility Search Check.
+        bool selectedProfileMatchesSearch =
+            selectedProfileIndex >= 0 &&
+            selectedProfileIndex < profiles.Count &&
+            profiles[selectedProfileIndex] != null &&
+            (string.IsNullOrWhiteSpace(speakerSearch) ||
+             (profiles[selectedProfileIndex].SpeakerName ?? string.Empty)
+                 .Contains(speakerSearch.Trim(), StringComparison.OrdinalIgnoreCase));
+
         // Selected profile information.
-        if (selectedProfileIndex >= 0 &&
-            selectedProfileIndex < profiles.Count)
+        if (selectedProfileMatchesSearch)
         {
             var selectedProfile = profiles[selectedProfileIndex];
 
@@ -207,8 +267,10 @@ public class SpeakerProfileWindow : Window, IDisposable
         }
         else
         {
-            ImGui.TextDisabled(
-                "Select a speaker above to view their settings.");
+            ImGui.TextDisabled(selectedProfileIndex >= 0 &&
+                !string.IsNullOrWhiteSpace(speakerSearch)
+                ? "The selected speaker is hidden by the current search."
+                : "Select a speaker above to view their settings.");
         }
 
         var popupTitle = isAddingProfile
@@ -344,8 +406,10 @@ public class SpeakerProfileWindow : Window, IDisposable
 
         {
 
-            if (selectedProfileIndex >= 0 &&
-                selectedProfileIndex < profiles.Count)
+            if (profiles != null &&
+                selectedProfileIndex >= 0 &&
+                selectedProfileIndex < profiles.Count &&
+                profiles[selectedProfileIndex] != null)
             {
                 var profileToDelete = profiles[selectedProfileIndex];
 
