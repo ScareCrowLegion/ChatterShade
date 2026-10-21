@@ -2,6 +2,9 @@ using Dalamud.Configuration;
 using System.Numerics;
 using System;
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
+using System.Collections.Generic;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs;
 
 namespace ChatterShade;
 
@@ -27,6 +30,7 @@ public class Configuration : IPluginConfiguration
     public Vector4 DialogueTextColor { get; set; } =
         new(242f / 255f, 242f / 255f, 242f / 255f, 1f);
     public bool NpcNameColorEnabled { get; set; } = true;
+    public List<SpeakerProfile> SpeakerProfiles { get; set; } = new();
     public Vector4 NpcNameColor { get; set; } =
         new(1f, 1f, 1f, 1f);
     public Vector4 DialogueBackgroundTint { get; set; } =
@@ -39,8 +43,36 @@ public class Configuration : IPluginConfiguration
         new(48f / 255f, 48f / 255f, 48f / 255f, 1f);
 
     // The below exists just to make saving less cumbersome
+    private const int CurrentConfigurationVersion = 1;
+
+    public void Migrate()
+    {
+        // Do not overwrite configuration from a newer plugin version.
+        if (Version > CurrentConfigurationVersion)
+            return;
+
+        // Already up to date.
+        if (Version == CurrentConfigurationVersion)
+            return;
+
+        // Upgrade configuration created before version 1.
+        if (Version < 1)
+        {
+            // Preserve all existing user-selected colors, mode,
+            // opacity values, and individual speaker profiles.
+
+            // Repair a missing speaker profile collection without
+            // replacing any existing profiles.
+            SpeakerProfiles ??= new List<SpeakerProfile>();
+
+            Version = 1;
+        }
+
+        Save();
+    }
+
     public void Save()
     {
-        Plugin.PluginInterface.SavePluginConfig(this);
+      Plugin.PluginInterface.SavePluginConfig(this);
     }
 }

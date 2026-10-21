@@ -17,6 +17,7 @@ using KamiToolKit;
 using KamiToolKit.Nodes;
 using KamiToolKit.Enums;
 using System.IO;
+using FFXIVClientStructs.FFXIV.Client.UI;
 
 namespace ChatterShade;
 
@@ -50,11 +51,14 @@ public sealed class Plugin : IAsyncDalamudPlugin
     public Configuration Configuration { get; private set; } = null!;
     public readonly WindowSystem WindowSystem = new("ChatterShade");
     private ConfigWindow ConfigWindow { get; set; } = null!;
+    private SpeakerProfileWindow SpeakerProfileWindow { get; set; } = null!;
     private bool nativeBackgroundHiddenForDraw;
 
     public async Task LoadAsync(CancellationToken cancellationtoken)
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+
+        Configuration.Migrate();
 
         toolkitInitializationStarted = true;
 
@@ -70,8 +74,10 @@ public sealed class Plugin : IAsyncDalamudPlugin
         AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, "Talk", OnTalkPreFinalize);
 
         ConfigWindow = new ConfigWindow(this);
+        SpeakerProfileWindow = new SpeakerProfileWindow(this);
 
         WindowSystem.AddWindow(ConfigWindow);
+        WindowSystem.AddWindow(SpeakerProfileWindow);
 
         commandRegistered = CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
@@ -151,11 +157,10 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
             textNode->TextColor = ToByteColor(
                 useDarkDialogueColors
-                     ? Configuration.DarkDialogueTextColor
-                     : Configuration.DialogueTextColor);
+                    ? Configuration.DarkDialogueTextColor
+                    : Configuration.DialogueTextColor);
         }
 
-        // Temporary NPC name recoloring test.
         if (customizeNpcName &&
             npcNameNode != null &&
             npcNameNode->IsVisible())
@@ -163,7 +168,31 @@ public sealed class Plugin : IAsyncDalamudPlugin
             originalNpcNameColor = npcNameNode->TextColor;
             modifiedNpcNameNode = (nint)npcNameNode;
 
-            npcNameNode->TextColor = ToByteColor(Configuration.NpcNameColor);
+            // Start with the player's configured NPC name color.
+            var selectedNameColor = Configuration.NpcNameColor;
+
+            // Read the displayed speaker name.
+            var currentSpeaker = npcNameNode->NodeText.ToString().Trim();
+
+            // Check for an enabled speaker profile.
+            if (!string.IsNullOrWhiteSpace(currentSpeaker))
+            {
+                var speakerProfile = Configuration.SpeakerProfiles.Find(
+                    profile =>
+                      profile.Enabled &&
+                      string.Equals(
+                          profile.SpeakerName?.Trim(),
+                          currentSpeaker,
+                          StringComparison.OrdinalIgnoreCase));
+
+                if (speakerProfile != null)
+                {
+                    selectedNameColor = speakerProfile.NameColor;
+                }
+            }
+
+            // Apply selected NPC name color.
+            npcNameNode->TextColor = ToByteColor(selectedNameColor);
         }
 
         if (styleEnabled && backgroundNode != null && backgroundNode->Type == NodeType.Image && backgroundNode->IsVisible())
@@ -255,6 +284,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         var addon = (AtkUnitBase*)args.Addon.Address;
 
         uint backgroundNodeId = 13;
+
         var backgroundNode = addon->GetNodeById(backgroundNodeId);
 
         if (backgroundNode == null || !backgroundNode->IsVisible())
@@ -347,7 +377,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     }
 
     private void OnTalkPreFinalize(AddonEvent type, AddonArgs args)
-    {
+    { 
         if (args.Addon.Address == replacementBackgroundAddon)
             DisposeReplacementBackground();
     }
@@ -391,6 +421,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         WindowSystem.RemoveAllWindows();
 
         ConfigWindow?.Dispose();
+        SpeakerProfileWindow?.Dispose();
 
         if (commandRegistered)
         {
@@ -418,5 +449,9 @@ public sealed class Plugin : IAsyncDalamudPlugin
     private nint modifiedBackgroundNode;
     private ByteColor originalBackgroundColor;
     private uint modifiedBackgroundNodeId;
+    public void OpenSpeakerProfileWindow()
+    {
+        SpeakerProfileWindow.Toggle();
+    }
     public void ToggleConfigUi() => ConfigWindow.Toggle();
 }

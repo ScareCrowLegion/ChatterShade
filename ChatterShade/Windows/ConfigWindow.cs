@@ -9,6 +9,8 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly Configuration configuration;
 
+    private readonly Plugin plugin;
+
     public ConfigWindow(Plugin plugin) : base("ChatterShade###ChatterShadeConfig")
     {
         Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse;
@@ -16,6 +18,7 @@ public class ConfigWindow : Window, IDisposable
         Size = new Vector2(420, 520);
         SizeCondition = ImGuiCond.Always;
 
+        this.plugin = plugin;
         configuration = plugin.Configuration;
 
         //Normalize alpha saved by eariler version while preserving RGB.
@@ -295,6 +298,23 @@ public class ConfigWindow : Window, IDisposable
             }
         }
 
+        // End of NPC Name Customization section
+        ImGui.Spacing();
+        ImGui.Separator();
+
+        // Speaker Profile section
+
+        ImGui.TextUnformatted("Speaker Profiles");
+
+        ImGui.TextWrapped("Create and manage custom name colors for individual NPC speakers.");
+
+        ImGui.Spacing();
+
+        if (ImGui.Button("Edit Speaker Profiles"))
+        {
+          plugin.OpenSpeakerProfileWindow();
+        }
+        
         ImGui.Spacing();
         ImGui.Separator();
 
