@@ -9,12 +9,14 @@ public class SpeakerProfileWindow : Window, IDisposable
 {
     private readonly Configuration configuration;
     private int selectedProfileIndex = -1;
-    private bool isAddingProfiles;
+    private string speakerSearch = string.Empty;
+    private bool isAddingProfile;
 
     private string editingSpeakerName = string.Empty;
     private Vector4 editingNameColor = Vector4.One;
     private bool editingProfileEnabled = true;
     private string profileSaveError = string.Empty;
+    private Vector2 deletePopupCenter;
 
     public SpeakerProfileWindow(Plugin plugin)
         : base("Speaker Profile Editor###ChatterShadeSpeakerProfiles")
@@ -46,17 +48,47 @@ public class SpeakerProfileWindow : Window, IDisposable
 
         var profiles = configuration.SpeakerProfiles;
 
-        if (profiles == null || profiles.Count == 0)
+        if (profiles == null)
+        {
+            ImGui.TextDisabled(
+                "Speaker profile collection is unavailable.");
+
+            return;
+        }
+
+        if (profiles.Count == 0)
         {
             selectedProfileIndex = -1;
 
             ImGui.TextDisabled(
                 "No speaker profiles have been created yet.");
-
-            return;
         }
 
         ImGui.TextUnformatted($"Saved profiles: {profiles.Count}");
+        ImGui.Spacing();
+
+        if (ImGui.Button("Add Speaker"))
+        {
+            isAddingProfile = true;
+
+            editingSpeakerName = string.Empty;
+            editingNameColor = Vector4.One;
+            editingProfileEnabled = true;
+
+            profileSaveError = string.Empty;
+
+            ImGui.OpenPopup("Speaker Profile###SpeakerProfilePopup");
+        }
+
+        ImGui.Spacing();
+
+        ImGui.SetNextItemWidth(-1f);
+        ImGui.InputTextWithHint(
+            "##SpeakerSearch",
+            "Search speaker profiles...",
+            ref speakerSearch,
+            100);
+
         ImGui.Spacing();
 
         // Profile selection list.
@@ -72,6 +104,21 @@ public class SpeakerProfileWindow : Window, IDisposable
                 if (profile == null)
                     continue;
 
+
+                var displayName = string.IsNullOrWhiteSpace(profile.SpeakerName)
+                    ? "Unnamed Speaker"
+                    : profile.SpeakerName;
+
+                // Filter before drawing any UI elements.
+                if (!string.IsNullOrWhiteSpace(speakerSearch) &&
+                    !displayName.Contains(
+                        speakerSearch.Trim(),
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // Only matching profiles reach this point.
                 ImGui.PushID(i);
 
                 ImGui.ColorButton(
@@ -81,10 +128,6 @@ public class SpeakerProfileWindow : Window, IDisposable
                     new Vector2(22, 22));
 
                 ImGui.SameLine();
-
-                var displayName = string.IsNullOrWhiteSpace(profile.SpeakerName)
-                    ? "Unnamed Speaker"
-                    : profile.SpeakerName;
 
                 var isSelected = selectedProfileIndex == i;
 
@@ -138,7 +181,7 @@ public class SpeakerProfileWindow : Window, IDisposable
 
                 if (ImGui.Button("Edit Selected"))
                 {
-                    isAddingProfiles = false;
+                    isAddingProfile = false;
 
                     editingSpeakerName = selectedProfile.SpeakerName;
                     editingNameColor = selectedProfile.NameColor;
@@ -146,8 +189,20 @@ public class SpeakerProfileWindow : Window, IDisposable
 
                     profileSaveError = string.Empty;
 
-                    ImGui.OpenPopup("Edit Speaker Profile");
-                }    
+                    ImGui.OpenPopup("Speaker Profile###SpeakerProfilePopup");
+                }
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Delete Selected"))
+                {
+                    var editorPosition = ImGui.GetWindowPos();
+                    var editorSize = ImGui.GetWindowSize();
+
+                    deletePopupCenter = editorPosition + editorSize * 0.5f;
+
+                    ImGui.OpenPopup("Delete Speaker Profile");
+                }
             }
         }
         else
@@ -156,11 +211,16 @@ public class SpeakerProfileWindow : Window, IDisposable
                 "Select a speaker above to view their settings.");
         }
 
+        var popupTitle = isAddingProfile
+            ? "Add Speaker Profile###SpeakerProfilePopup"
+            : "Edit Speaker Profile###SpeakerProfilePopup";
+
         if (ImGui.BeginPopupModal(
-            "Edit Speaker Profile",
+            popupTitle,
             ImGuiWindowFlags.AlwaysAutoResize))
         {
-            ImGui.TextUnformatted("Edit Speaker");
+            ImGui.TextUnformatted(
+                isAddingProfile ? "Add Speaker" : "Edit Speaker");
 
             ImGui.Separator();
             ImGui.Spacing();
@@ -191,7 +251,6 @@ public class SpeakerProfileWindow : Window, IDisposable
 
             if (ImGui.Button("Save Changes"))
             {
-                // Profile Error Check System
                 profileSaveError = string.Empty;
 
                 var trimmedName = editingSpeakerName.Trim();
@@ -199,15 +258,6 @@ public class SpeakerProfileWindow : Window, IDisposable
                 if (profiles == null)
                 {
                     profileSaveError = "Profile collection is unavailable.";
-                }
-                else if (selectedProfileIndex < 0 ||
-                         selectedProfileIndex >= profiles.Count)
-                {
-                    profileSaveError = "No valid speaker profile is selected.";
-                }
-                else if (profiles[selectedProfileIndex] == null)
-                {
-                    profileSaveError = "The selected speaker profile is unavailable.";
                 }
                 else if (string.IsNullOrWhiteSpace(trimmedName))
                 {
@@ -217,18 +267,46 @@ public class SpeakerProfileWindow : Window, IDisposable
                 {
                     var duplicateExists = profiles.Exists(profile =>
                         profile != null &&
-                        !ReferenceEquals(profile, profiles[selectedProfileIndex]) &&
-                        string.Equals(
+                        (!isAddingProfile &&
+                         selectedProfileIndex >= 0 &&
+                         selectedProfileIndex < profiles.Count
+                            ? !ReferenceEquals(profile, profiles[selectedProfileIndex])
+                            : true) && string.Equals(
                             profile.SpeakerName?.Trim(),
                             trimmedName,
                             StringComparison.OrdinalIgnoreCase));
 
                     if (duplicateExists)
                     {
-                        profileSaveError = "A profile with this speaker name already exists.";
+                        profileSaveError =
+                            "A profile with this speaker name already exists.";
+                    }
+                    else if (isAddingProfile)
+                    {
+                        // Create a new speaker profile.
+                        var newProfile = new SpeakerProfile
+                        {
+                            SpeakerName = trimmedName,
+                            NameColor = editingNameColor,
+                            Enabled = editingProfileEnabled
+                        };
+
+                        profiles.Add(newProfile);
+                        selectedProfileIndex = profiles.Count - 1;
+
+                        configuration.Save();
+                        ImGui.CloseCurrentPopup();
+                    }
+                    else if (selectedProfileIndex < 0 ||
+                             selectedProfileIndex >= profiles.Count ||
+                             profiles[selectedProfileIndex] == null)
+                    {
+                        profileSaveError =
+                            "No valid speaker profile is selected.";
                     }
                     else
                     {
+                        // Update the existing speaker profile.
                         var selectedProfile = profiles[selectedProfileIndex];
 
                         selectedProfile.SpeakerName = trimmedName;
@@ -236,7 +314,6 @@ public class SpeakerProfileWindow : Window, IDisposable
                         selectedProfile.Enabled = editingProfileEnabled;
 
                         configuration.Save();
-
                         ImGui.CloseCurrentPopup();
                     }
                 }
@@ -250,5 +327,67 @@ public class SpeakerProfileWindow : Window, IDisposable
 
             ImGui.EndPopup();
         }
+
+
+        ImGui.SetNextWindowPos(
+            deletePopupCenter,
+            ImGuiCond.Always,
+            new Vector2(0.5f, 0.5f));
+
+        ImGui.SetNextWindowSize(
+            new Vector2(390, 115),
+            ImGuiCond.Always);
+
+        if (ImGui.BeginPopupModal(
+                "Delete Speaker Profile",
+                ImGuiWindowFlags.NoResize))
+
+        {
+
+            if (selectedProfileIndex >= 0 &&
+                selectedProfileIndex < profiles.Count)
+            {
+                var profileToDelete = profiles[selectedProfileIndex];
+
+                ImGui.TextWrapped(
+                    $"Are you sure you want to delete the profile for " +
+                    $"{profileToDelete.SpeakerName}?");
+
+                ImGui.Spacing();
+
+                ImGui.TextWrapped(
+                    "This will remove the speaker's custom color settings.");
+
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                if (ImGui.Button("Cancel##Delete"))
+                {
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Delete Profile"))
+                {
+                    profiles.RemoveAt(selectedProfileIndex);
+                    selectedProfileIndex = -1;
+
+                    configuration.Save();
+
+                    ImGui.CloseCurrentPopup();
+                }
+            }
+            else
+            {
+                ImGui.TextDisabled("No valid speaker profile selected.");
+
+                if (ImGui.Button("Close##Delete"))
+                    ImGui.CloseCurrentPopup();
+            }
+
+            ImGui.EndPopup();
+        }
     }
 }
+
