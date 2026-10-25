@@ -130,6 +130,9 @@ public class ConfigWindow : Window, IDisposable
             }
 
             ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.TextDisabled("DIALOGUE APPEARANCE");
+            ImGui.Spacing();
 
             // Standard Dialogue section
             if (ImGui.CollapsingHeader(
@@ -322,6 +325,8 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Spacing();
             ImGui.Separator();
+            ImGui.TextDisabled("NAME CUSTOMIZATION");
+            ImGui.Spacing();
 
             // Independent NPC Name Customization section
             if (ImGui.CollapsingHeader(
@@ -367,19 +372,6 @@ public class ConfigWindow : Window, IDisposable
             ImGui.Spacing();
             ImGui.Separator();
 
-            // Speaker Profile section
-
-            ImGui.TextUnformatted("Speaker Profiles");
-
-            ImGui.TextWrapped("Create and manage custom name colors for individual NPC speakers.");
-
-            ImGui.Spacing();
-
-            if (ImGui.Button("Edit Speaker Profiles"))
-            {
-                plugin.OpenSpeakerProfileWindow();
-            }
-
             ImGui.Spacing();
             ImGui.Separator();
 
@@ -388,6 +380,9 @@ public class ConfigWindow : Window, IDisposable
                 "Disabling customization restores the original game " +
                 "or installed UI mod appearance.");
 
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.TextDisabled("GENERAL SETTINGS");
             ImGui.Spacing();
 
             var movable = configuration.IsConfigWindowMovable;
@@ -403,12 +398,16 @@ public class ConfigWindow : Window, IDisposable
             ImGui.TextUnformatted("Speakers");
             ImGui.Separator();
             ImGui.Spacing();
+
+            ImGui.TextDisabled("INDIVIDUAL NPC PROFILES");
+            ImGui.Spacing();
+
             ImGui.TextWrapped(
                 "Manage individual NPC Speaker profiles and their custom name colors.");
 
             ImGui.Spacing();
 
-            if (ImGui.Button("Open Speaker Profile Editor"))
+            if (ImGui.Button("Edit Speaker Profiles"))
             {
                 plugin.OpenSpeakerProfileWindow();
             }
