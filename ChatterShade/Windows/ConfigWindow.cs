@@ -12,6 +12,9 @@ public class ConfigWindow : Window, IDisposable
     private readonly Plugin plugin;
 
     private int selectedWorkspace = 0;
+    private int selectedPresetIndex = -1;
+    private string newPresetName = string.Empty;
+    private string presetStatusMessage = string.Empty;
 
     public ConfigWindow(Plugin plugin) : base("ChatterShade###ChatterShadeConfig")
     {
@@ -417,7 +420,190 @@ public class ConfigWindow : Window, IDisposable
             ImGui.TextUnformatted("Presets");
             ImGui.Separator();
             ImGui.Spacing();
+
+            ImGui.TextDisabled("APPEARANCE PRESETS");
+            ImGui.Spacing();
+
             ImGui.TextWrapped("Named appearance presets are planned for a future update.");
+
+            ImGui.Spacing();
+            ImGui.Separator();
+
+            ImGui.TextDisabled("SAVE CURRENT APPEARANCE");
+            ImGui.Spacing();
+
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+
+            ImGui.InputTextWithHint("##NewAppearancePresetName", "Enter a preset name...", ref newPresetName, 64);
+
+            if (ImGui.Button("Save Current Appearance"))
+            {
+                var trimmedName = newPresetName.Trim();
+
+                configuration.AppearancePresets ??= new();
+
+                var presets = configuration.AppearancePresets;
+
+                if (string.IsNullOrWhiteSpace(trimmedName))
+                {
+                    presetStatusMessage = "Enter a name before saving a preset.";
+                }
+                else if (presets.Exists(preset =>
+                             preset != null &&
+                             string.Equals(
+                                 preset.Name?.Trim(),
+                                 trimmedName,
+                                 StringComparison.OrdinalIgnoreCase)))
+                {
+                    presetStatusMessage = "A preset with that name already exists.";
+                }
+                else
+                {
+                    presets.Add(CreateAppearancePreset(trimmedName));
+
+                    selectedPresetIndex = presets.Count - 1;
+                    newPresetName = string.Empty;
+
+                    configuration.Save();
+
+                    presetStatusMessage = $"Saved preset '{trimmedName}'.";
+                }
+            }
+
+            ImGui.Spacing();
+            ImGui.Separator();
+
+            ImGui.TextDisabled("SAVED PRESETS");
+            ImGui.Spacing();
+
+            configuration.AppearancePresets ??= new();
+
+            var savedPresets = configuration.AppearancePresets;
+
+            ImGui.BeginChild(
+                "AppearancePresetList",
+                new Vector2(0, 140),
+                true);
+
+            if (savedPresets.Count == 0)
+            {
+                ImGui.TextDisabled("No saved appearance presets yet.");
+            }
+            else
+            {
+                for (var i = 0; i < savedPresets.Count; i++)
+                {
+                    var preset = savedPresets[i];
+
+                    if (preset == null)
+                        continue;
+
+                    var displayName = string.IsNullOrWhiteSpace(preset.Name)
+                        ? "Unnamed Preset"
+                        : preset.Name;
+
+                    ImGui.PushID(i);
+
+                    if (ImGui.Selectable(
+                        displayName,
+                        selectedPresetIndex == i))
+                    {
+                        selectedPresetIndex = i;
+                        presetStatusMessage = string.Empty;
+                    }
+
+                    ImGui.PopID();
+                }
+            }
+
+            ImGui.EndChild();
+
+            ImGui.Spacing();
+
+            var selectedPresetIsVaild =
+                selectedPresetIndex >= 0 &&
+                selectedPresetIndex < savedPresets.Count &&
+                savedPresets[selectedPresetIndex] != null;
+
+            if (selectedPresetIsVaild)
+            {
+                var selectedPreset = savedPresets[selectedPresetIndex];
+
+                ImGui.TextWrapped($"Selected preset: {selectedPreset.Name}");
+
+                if (ImGui.Button("Apply Selected Preset"))
+                {
+                    ApplyAppearancePreset(selectedPreset);
+
+                    presetStatusMessage = $"Applied preset '{selectedPreset.Name} '.";
+                }
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Delete Selected Preset"))
+                {
+                    ImGui.OpenPopup(
+                        "Delete Appearance Preset###DeleteAppearancePreset");
+
+                }
+            }
+            else
+            {
+                ImGui.TextDisabled
+                    ("Select a saved preset to apply or delete it.");
+            }
+
+            if (ImGui.BeginPopupModal(
+                "Delete Appearance###DeleteAppearancePreset",
+                ImGuiWindowFlags.AlwaysAutoResize))
+            {
+                var canDelete =
+                    selectedPresetIndex >= 0 &&
+                    selectedPresetIndex < savedPresets.Count &&
+                    savedPresets[selectedPresetIndex] != null;
+
+                var presetName = canDelete
+                    ? savedPresets[selectedPresetIndex].Name
+                    : string.Empty;
+
+                ImGui.TextWrapped(
+                    canDelete
+                        ? $"Are you sure you want to delete '{presetName}'?"
+                        : "No valid preset is selected.");
+
+                ImGui.Spacing();
+
+                if (ImGui.Button("Cancel##CancelDeleteAppearancePreset"))
+                {
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Delete Preset##ConfirmDeleteAppearancePreset"))
+                {
+                    if (canDelete)
+                    {
+                        savedPresets.RemoveAt(selectedPresetIndex);
+                        selectedPresetIndex = -1;
+
+                        configuration.Save();
+
+                        presetStatusMessage =
+                            $"Deleted preset '{presetName}'.";
+                    }
+
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.EndPopup();
+            }
+
+            if (!string.IsNullOrWhiteSpace(presetStatusMessage))
+            {
+                ImGui.Spacing();
+                ImGui.TextWrapped(presetStatusMessage);
+            }
         }
         else if (selectedWorkspace == 3)
         {
@@ -429,6 +615,54 @@ public class ConfigWindow : Window, IDisposable
         }
         ImGui.EndChild(); // End of ChatterSpace Workspace.
         ImGui.EndGroup();
+    }
+
+    private AppearancePreset CreateAppearancePreset(string name)
+    {
+        return new AppearancePreset
+        {
+            Name = name,
+
+            StanadardDialogueEnabled = configuration.StandardDialogueEnabled,
+            DarkDialogueEnabled = configuration.DarkDialogueEnabled,
+
+            StandardBackgroundMode = configuration.StandardBackgroundMode,
+            DarkBackgroundMode = configuration.DarkBackgroundMode,
+
+            StandardBackgroundOpacity = configuration.StandardBackgroundOpacity,
+            DarkBackgroundOpacity = configuration.DarkBackgroundOpacity,
+
+            DialogueTextColor = configuration.DialogueTextColor,
+            DarkDialogueTextColor = configuration.DarkDialogueTextColor,
+
+            DialogueBackgroundTint = configuration.DialogueBackgroundTint,
+            DarkDialogueBackgroundTint = configuration.DarkDialogueBackgroundTint,
+
+            NpcNameColorEnabled = configuration.NpcNameColorEnabled,
+            NpcNameColor = configuration.NpcNameColor,
+        };
+    }
+    private void ApplyAppearancePreset(AppearancePreset preset)
+    {
+        configuration.StandardDialogueEnabled = preset.StanadardDialogueEnabled;
+        configuration.DarkDialogueEnabled = preset.DarkDialogueEnabled;
+
+        configuration.StandardBackgroundMode = preset.StandardBackgroundMode;
+        configuration.DarkBackgroundMode = preset.DarkBackgroundMode;
+
+        configuration.StandardBackgroundOpacity = preset.StandardBackgroundOpacity;
+        configuration.DarkBackgroundOpacity = preset.DarkBackgroundOpacity;
+
+        configuration.DialogueTextColor = preset.DialogueTextColor;
+        configuration.DarkDialogueTextColor = preset.DarkDialogueTextColor;
+
+        configuration.DialogueBackgroundTint = preset.DialogueBackgroundTint;
+        configuration.DarkDialogueBackgroundTint = preset.DarkDialogueBackgroundTint;
+
+        configuration.NpcNameColorEnabled = preset.NpcNameColorEnabled;
+        configuration.NpcNameColor = preset.NpcNameColor;
+
+        configuration.Save();
     }
 }
 

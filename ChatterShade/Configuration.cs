@@ -31,6 +31,7 @@ public class Configuration : IPluginConfiguration
         new(242f / 255f, 242f / 255f, 242f / 255f, 1f);
     public bool NpcNameColorEnabled { get; set; } = true;
     public List<SpeakerProfile> SpeakerProfiles { get; set; } = new();
+    public List<AppearancePreset> AppearancePresets { get; set; } = new();
     public Vector4 NpcNameColor { get; set; } =
         new(1f, 1f, 1f, 1f);
     public Vector4 DialogueBackgroundTint { get; set; } =
@@ -43,7 +44,7 @@ public class Configuration : IPluginConfiguration
         new(48f / 255f, 48f / 255f, 48f / 255f, 1f);
 
     // The below exists just to make saving less cumbersome
-    private const int CurrentConfigurationVersion = 1;
+    private const int CurrentConfigurationVersion = 2;
 
     public void Migrate()
     {
@@ -68,6 +69,11 @@ public class Configuration : IPluginConfiguration
             Version = 1;
         }
 
+        // Add preset storage without replacing existing configuration.
+        if (Version < 2)
+        {
+            AppearancePresets ??= new List<AppearancePreset>();
+        }
         Save();
     }
 
