@@ -239,13 +239,26 @@ public class ConfigWindow : Window, IDisposable
             DrawSectionLabel("LIVE PREVIEW");
             ImGui.Spacing();
 
-            ImGui.SetNextItemWidth(
-                ImGui.GetContentRegionAvail().X * 0.65f);
+            DrawSectionLabel("PREVIEW MODE");
+            ImGui.Spacing();
 
-            ImGui.Combo(
-                "Preview style##LiveDialoguePreview",
-                ref livePreviewStyle,
-                "Standard Dialogue\0Dark / System Dialogue\0");
+            var previewButtonWidth =
+                (ImGui.GetContentRegionAvail().X -
+                ImGui.GetStyle().ItemSpacing.X) * 0.5f;
+
+            DrawPreviewModeButton(
+                "Standard Dialogue",
+                0,
+                previewButtonWidth);
+
+            ImGui.SameLine();
+
+            DrawPreviewModeButton(
+                "Dark / System",
+                1,
+                previewButtonWidth);
+
+            ImGui.Spacing();
 
             var previewIsDark = livePreviewStyle == 1;
 
@@ -286,7 +299,13 @@ public class ConfigWindow : Window, IDisposable
                 previewSpeakerColor,
                 previewTextColor);
 
-            ImGui.TextDisabled("Illustrative sample; game textures and fonts may differ.");
+            ImGui.TextDisabled(
+                previewIsDark
+                    ? "System dialogue preview · no speaker name"
+                    : "Standard dialogue preview · NPC name shown");
+
+            ImGui.TextDisabled(
+                "Illustrative sample; game textures and fonts may differ");
 
             ImGui.Spacing();
             ImGui.Separator();
@@ -1091,7 +1110,42 @@ public class ConfigWindow : Window, IDisposable
         ImGui.PopStyleColor(2);
     }
 
+    private bool DrawPreviewModeButton(string label, int style, float width)
+    {
+        var isSelected = livePreviewStyle == style;
 
+        var buttonColor = isSelected
+            ? new Vector4(0.38f, 0.28f, 0.12f, 1.00f)
+            : new Vector4(0.075f, 0.150f, 0.220f, 1.00f);
+
+        var hoveredColor = isSelected
+            ? new Vector4(0.52f, 0.38f, 0.15f, 1.00f)
+            : new Vector4(0.100f, 0.280f, 0.370f, 1.00f);
+
+        var activeColor = isSelected
+            ? new Vector4(0.65f, 0.47f, 0.19f, 1.00f)
+            : new Vector4(0.120f, 0.360f, 0.460f, 1.00f);
+
+        var textColor = isSelected
+            ? new Vector4(0.98f, 0.92f, 0.79f, 1.00f)
+            : new Vector4(0.890f, 0.920f, 0.970f, 1.00f);
+
+        ImGui.PushStyleColor(ImGuiCol.Button, buttonColor);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, hoveredColor);
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, activeColor);
+        ImGui.PushStyleColor(ImGuiCol.Text, textColor);
+
+        var clicked = ImGui.Button(
+            label,
+            new Vector2(width, 0f));
+
+        ImGui.PopStyleColor(4);
+
+        if (clicked)
+            livePreviewStyle = style;
+
+        return clicked;
+    }
 
     private AppearancePreset CreateAppearancePreset(string name)
     {
