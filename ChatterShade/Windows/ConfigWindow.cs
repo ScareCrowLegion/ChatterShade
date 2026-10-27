@@ -605,17 +605,6 @@ public class ConfigWindow : Window, IDisposable
                 "Disabling customization restores the original game " +
                 "or installed UI mod appearance.");
 
-            ImGui.Spacing();
-            ImGui.Separator();
-            DrawSectionLabel("GENERAL SETTINGS");
-            ImGui.Spacing();
-
-            var movable = configuration.IsConfigWindowMovable;
-            if (ImGui.Checkbox("Movable Config Window", ref movable))
-            {
-                configuration.IsConfigWindowMovable = movable;
-                configuration.Save();
-            }
         }
 
         if (selectedWorkspace == 1)
@@ -917,8 +906,31 @@ public class ConfigWindow : Window, IDisposable
         else if (selectedWorkspace == 3)
         {
             DrawWorkspaceTitle("Settings");
+
             ImGui.TextWrapped(
-                "General plugin settings and maintenance options will be organized here.");
+                "Configure the general behavior of ChatterShade.");
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            DrawSectionLabel("GENERAL SETTINGS");
+            ImGui.Spacing();
+
+            var movable = configuration.IsConfigWindowMovable;
+
+            if (ImGui.Checkbox("Moveable Config Window", ref movable))
+            {
+                configuration.IsConfigWindowMovable = movable;
+                configuration.Save();
+            }
+
+            ImGui.TextDisabled(
+                "Allow the ChatterShade configuration window to be repositioned.");
+
+            ImGui.Spacing();
+            ImGui.Separator();
+
+            ImGui.TextDisabled(
+                "Settings are saved automatically when changed.");
         }
         ImGui.EndChild(); 
         // End of ChatterSpace Workspace.
