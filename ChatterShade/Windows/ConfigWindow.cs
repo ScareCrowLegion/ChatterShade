@@ -44,9 +44,10 @@ public class ConfigWindow : Window, IDisposable
 
     public void Dispose() { }
 
+
     public override void PreDraw()
     {
-        // Flags must be added or removed before Draw() is being called, or they won't apply
+        // Preserve the existing movable-window setting.
         if (configuration.IsConfigWindowMovable)
         {
             Flags &= ~ImGuiWindowFlags.NoMove;
@@ -55,7 +56,117 @@ public class ConfigWindow : Window, IDisposable
         {
             Flags |= ImGuiWindowFlags.NoMove;
         }
+
+        // Aetheric Studio color palette.
+        ImGui.PushStyleColor(ImGuiCol.WindowBg,
+            new Vector4(0.035f, 0.045f, 0.075f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.ChildBg,
+            new Vector4(0.050f, 0.070f, 0.108f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.PopupBg,
+            new Vector4(0.055f, 0.075f, 0.120f, 0.99f));
+        ImGui.PushStyleColor(ImGuiCol.Border,
+            new Vector4(0.200f, 0.310f, 0.420f, 0.85f));
+        ImGui.PushStyleColor(ImGuiCol.BorderShadow,
+            new Vector4(0.010f, 0.015f, 0.030f, 0.30f));
+
+        // Primary and secondary text.
+        ImGui.PushStyleColor(ImGuiCol.Text,
+            new Vector4(0.890f, 0.920f, 0.970f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.TextDisabled,
+            new Vector4(0.500f, 0.600f, 0.720f, 1.00f));
+
+        // Dark title bar with an active aether-blue tint.
+        ImGui.PushStyleColor(ImGuiCol.TitleBg,
+            new Vector4(0.035f, 0.060f, 0.105f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.TitleBgActive,
+            new Vector4(0.055f, 0.150f, 0.220f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.TitleBgCollapsed,
+            new Vector4(0.030f, 0.050f, 0.080f, 1.00f));
+
+        // Input fields and interactive controls.
+        ImGui.PushStyleColor(ImGuiCol.FrameBg,
+            new Vector4(0.075f, 0.100f, 0.150f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.FrameBgHovered,
+            new Vector4(0.100f, 0.210f, 0.290f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.FrameBgActive,
+            new Vector4(0.120f, 0.290f, 0.370f, 1.00f));
+
+        // Buttons.
+        ImGui.PushStyleColor(ImGuiCol.Button,
+            new Vector4(0.075f, 0.150f, 0.220f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered,
+            new Vector4(0.100f, 0.280f, 0.370f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive,
+            new Vector4(0.120f, 0.360f, 0.460f, 1.00f));
+
+        // Navigation selections and collapsing section headers.
+        ImGui.PushStyleColor(ImGuiCol.Header,
+            new Vector4(0.075f, 0.180f, 0.270f, 0.95f));
+        ImGui.PushStyleColor(ImGuiCol.HeaderHovered,
+            new Vector4(0.100f, 0.290f, 0.390f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.HeaderActive,
+            new Vector4(0.120f, 0.360f, 0.460f, 1.00f));
+
+        // Separators and crystal-gold accents.
+        ImGui.PushStyleColor(ImGuiCol.Separator,
+            new Vector4(0.140f, 0.230f, 0.330f, 0.55f));
+        ImGui.PushStyleColor(ImGuiCol.CheckMark,
+            new Vector4(0.930f, 0.720f, 0.370f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.SliderGrab,
+            new Vector4(0.580f, 0.680f, 0.770f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.SliderGrabActive,
+            new Vector4(0.930f, 0.720f, 0.370f, 1.00f));
+
+        // Scrollbars.
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarBg,
+            new Vector4(0.025f, 0.040f, 0.065f, 0.60f));
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab,
+            new Vector4(0.150f, 0.250f, 0.350f, 0.80f));
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered,
+            new Vector4(0.210f, 0.360f, 0.460f, 0.90f));
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive,
+            new Vector4(0.820f, 0.630f, 0.300f, 1.00f));
+
+        ImGui.PushStyleColor(ImGuiCol.TextSelectedBg,
+            new Vector4(0.130f, 0.360f, 0.480f, 0.45f));
+
+        // Rounded shapes and consistent control spacing.
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 8f);
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 6f);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4f);
+        ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 6f);
+        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarRounding, 6f);
+        ImGui.PushStyleVar(ImGuiStyleVar.GrabRounding, 4f);
+
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.WindowPadding,
+            new Vector2(12f, 12f));
+
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.FramePadding,
+            new Vector2(8f, 5f));
+
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.ItemSpacing,
+            new Vector2(9f, 6f));
+
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.ItemInnerSpacing,
+            new Vector2(6f, 4f));
+
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1f);
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 1f);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.PopupBorderSize, 1f);
     }
+
+    public override void PostDraw()
+    {
+        // Restore every style entry pushed by PreDraw().
+        ImGui.PopStyleVar(14);
+        ImGui.PopStyleColor(28);
+    }
+
 
 
 
@@ -76,9 +187,6 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextDisabled("WORKSPACE");
         ImGui.Spacing();
 
-        ImGui.PushStyleColor(ImGuiCol.Header, new Vector4(0.12f, 0.34f, 0.46f, 0.70f));
-        ImGui.PushStyleColor(ImGuiCol.HeaderHovered, new Vector4(0.16f, 0.42f, 0.58f, 0.85f));
-        ImGui.PushStyleColor(ImGuiCol.HeaderActive, new Vector4(0.18f, 0.46f, 0.62f, 1.0f));
         if (ImGui.Selectable($"{(selectedWorkspace == 0 ? "> " : " ")}Appearance", selectedWorkspace == 0,
                  ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, 0)))
         {
@@ -103,8 +211,6 @@ public class ConfigWindow : Window, IDisposable
             selectedWorkspace = 3;
         }
 
-        ImGui.PopStyleColor(3);
-
         ImGui.EndChild();
 
         ImGui.SameLine();
@@ -113,7 +219,8 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.BeginChild("ChatterShadeWorkspace", 
               new Vector2(0, 0),
-              false);
+              false,
+              ImGuiWindowFlags.AlwaysUseWindowPadding);
 
         // Global enable setting
         if (selectedWorkspace == 0)
@@ -372,9 +479,6 @@ public class ConfigWindow : Window, IDisposable
             }
 
             // End of NPC Name Customization section
-            ImGui.Spacing();
-            ImGui.Separator();
-
             ImGui.Spacing();
             ImGui.Separator();
 
