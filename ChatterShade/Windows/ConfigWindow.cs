@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
+using Lumina.Excel.Sheets;
 
 namespace ChatterShade.Windows;
 
@@ -42,8 +43,10 @@ public class ConfigWindow : Window, IDisposable
         }
     }
 
-    public void Dispose() { }
+    public void Dispose() 
+    { 
 
+    }
 
     public override void PreDraw()
     {
@@ -546,7 +549,7 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.InputTextWithHint("##NewAppearancePresetName", "Enter a preset name...", ref newPresetName, 64);
 
-            if (DrawStyledActionButton("Save Current Appearance"))
+            if (DrawStyledActionButton("Save Current Appearance", true))
             {
                 var trimmedName = newPresetName.Trim();
 
@@ -614,14 +617,29 @@ public class ConfigWindow : Window, IDisposable
 
                     ImGui.PushID(i);
 
+                    var isSelected = selectedPresetIndex == i;
+
+                    if (isSelected)
+                    {
+                        ImGui.PushStyleColor(
+                            ImGuiCol.Text,
+                            new Vector4(0.95f, 0.78f, 0.48f, 1.00f));
+                    }
+
                     if (ImGui.Selectable(
                         displayName,
-                        selectedPresetIndex == i))
+                        isSelected,
+                        ImGuiSelectableFlags.None,
+                        new Vector2(ImGui.GetContentRegionAvail().X, 0)))
                     {
                         selectedPresetIndex = i;
                         presetStatusMessage = string.Empty;
                     }
 
+                    if (isSelected)
+                    {
+                        ImGui.PopStyleColor();
+                    }
                     ImGui.PopID();
                 }
             }
@@ -641,7 +659,7 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.TextWrapped($"Selected preset: {selectedPreset.Name}");
 
-                if (DrawStyledActionButton("Apply Selected Preset"))
+                if (DrawStyledActionButton("Apply Selected Preset", true))
                 {
                     ApplyAppearancePreset(selectedPreset);
 
@@ -650,14 +668,14 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.SameLine();
 
-                if (DrawStyledActionButton("Update Selected Preset"))
+                if (DrawStyledActionButton("Update Selected Preset", true))
                 {
                     ImGui.OpenPopup("Update Appearance Preset###UpdateAppearancePreset");
                 }
 
                 ImGui.Spacing();
 
-                if (DrawStyledActionButton("Delete Selected Preset"))
+                if (DrawStyledDangerButton("Delete Selected Preset"))
                 {
                     ImGui.OpenPopup(
                         "Delete Appearance Preset###DeleteAppearancePreset");
@@ -780,7 +798,15 @@ public class ConfigWindow : Window, IDisposable
             if (!string.IsNullOrWhiteSpace(presetStatusMessage))
             {
                 ImGui.Spacing();
+                ImGui.Separator();
+
+                ImGui.PushStyleColor(
+                    ImGuiCol.Text,
+                    new Vector4(0.93f, 0.72f, 0.37f, 1.00f));
+
                 ImGui.TextWrapped(presetStatusMessage);
+
+                ImGui.PopStyleColor();
             }
         }
         else if (selectedWorkspace == 3)
@@ -910,6 +936,30 @@ public class ConfigWindow : Window, IDisposable
         return clicked;
     }
 
+    private static bool DrawStyledDangerButton(string label)
+    {
+        ImGui.PushStyleColor(
+            ImGuiCol.Button,
+            new Vector4(0.30f, 0.095f, 0.12f, 1.00f));
+
+        ImGui.PushStyleColor(
+            ImGuiCol.ButtonHovered,
+            new Vector4(0.44f, 0.12f, 0.15f, 1.00f));
+
+        ImGui.PushStyleColor(
+            ImGuiCol.ButtonActive,
+            new Vector4(0.56f, 0.15f, 0.18f, 1.00f));
+
+        ImGui.PushStyleColor(
+            ImGuiCol.Text,
+            new Vector4(0.98f, 0.89f, 0.87f, 1.00f));
+
+        var clicked = ImGui.Button(label);
+
+        ImGui.PopStyleColor(4);
+
+        return clicked;
+    }
     private static void DrawSectionLabel(string label)
     {
         ImGui.PushStyleColor(

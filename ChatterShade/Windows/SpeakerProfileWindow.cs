@@ -30,10 +30,116 @@ public class SpeakerProfileWindow : Window, IDisposable
     {
     }
 
+    public override void PreDraw()
+    {
+        // Midnight-navy surfaces.
+        ImGui.PushStyleColor(ImGuiCol.WindowBg,
+            new Vector4(0.035f, 0.045f, 0.075f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.ChildBg,
+            new Vector4(0.050f, 0.070f, 0.10f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.PopupBg,
+            new Vector4(0.055f, 0.075f, 0.120f, 0.99f));
+        ImGui.PushStyleColor(ImGuiCol.Border,
+            new Vector4(0.200f, 0.310f, 0.420f, 0.85f));
+        ImGui.PushStyleColor(ImGuiCol.BorderShadow,
+            new Vector4(0.010f, 0.015f, 0.030f, 0.30f));
 
+        // Primary and secondary text.
+        ImGui.PushStyleColor(ImGuiCol.Text,
+            new Vector4(0.890f, 0.920f, 0.970f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.TextDisabled,
+            new Vector4(0.500f, 0.600f, 0.720f, 1.00f));
+
+        // Title bar.
+        ImGui.PushStyleColor(ImGuiCol.TitleBg,
+            new Vector4(0.035f, 0.060f, 0.105f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.TitleBgActive,
+            new Vector4(0.055f, 0.150f, 0.220f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.TitleBgCollapsed,
+            new Vector4(0.030f, 0.050f, 0.080f, 1.00f));
+
+        // Input fields.
+        ImGui.PushStyleColor(ImGuiCol.FrameBg,
+            new Vector4(0.075f, 0.100f, 0.150f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.FrameBgHovered,
+            new Vector4(0.100f, 0.210f, 0.290f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.FrameBgHovered,
+            new Vector4(0.120f, 0.290f, 0.370f, 1.00f));
+
+        // Buttons.
+        ImGui.PushStyleColor(ImGuiCol.Button,
+            new Vector4(0.075f, 0.150f, 0.220f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered,
+            new Vector4(0.100f, 0.280f, 0.370f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive,
+            new Vector4(0.120f, 0.360f, 0.460f, 1.00f));
+
+        // Selection and interactive headers.
+        ImGui.PushStyleColor(ImGuiCol.Header,
+            new Vector4(0.075f, 0.180f, 0.270f, 0.95f));
+        ImGui.PushStyleColor(ImGuiCol.HeaderHovered,
+            new Vector4(0.100f, 0.290f, 0.390f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.HeaderActive,
+            new Vector4(0.120f, 0.360f, 0.460f, 1.00f));
+
+        // Separators and accents.
+        ImGui.PushStyleColor(ImGuiCol.Separator,
+            new Vector4(0.140f, 0.230f, 0.330f, 0.55f));
+        ImGui.PushStyleColor(ImGuiCol.CheckMark,
+            new Vector4(0.930f, 0.720f, 0.370f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.SliderGrab,
+            new Vector4(0.580f, 0.680f, 0.770f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.SliderGrabActive,
+            new Vector4(0.930f, 0.720f, 0.370f, 1.00f));
+
+        // Scrollbars and selected text.
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarBg,
+            new Vector4(0.025f, 0.040f, 0.065f, 0.60f));
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab,
+            new Vector4(0.150f, 0.250f, 0.350f, 0.80f));
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered,
+            new Vector4(0.210f, 0.360f, 0.460f, 0.90f));
+        ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive,
+            new Vector4(0.820f, 0.630f, 0.300f, 1.00f));
+        ImGui.PushStyleColor(ImGuiCol.TextSelectedBg,
+            new Vector4(0.130f, 0.360f, 0.480f, 0.45f));
+
+        // Rounded surfaces and consistent spacing.
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 8f);
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 6f);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4f);
+        ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 6f);
+        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarRounding, 6f);
+        ImGui.PushStyleVar(ImGuiStyleVar.GrabRounding, 4f);
+
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.WindowPadding,
+            new Vector2(12f, 12f));
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.FramePadding,
+            new Vector2(8f, 5f));
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.ItemSpacing,
+            new Vector2(9f, 6f));
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.ItemInnerSpacing,
+            new Vector2(6f, 4f));
+
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1f);
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 1f);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.PopupBorderSize, 1f);
+    }
+
+    public override void PostDraw()
+    {
+        ImGui.PopStyleVar(14);
+        ImGui.PopStyleColor(28);
+    }
+    
     public override void Draw()
     {
-        ImGui.TextUnformatted("Saved Speaker Profiles");
+        DrawEditorTitle("Saved Speaker Profiles");
 
         ImGui.Separator();
         ImGui.Spacing();
@@ -61,10 +167,11 @@ public class SpeakerProfileWindow : Window, IDisposable
                 "No speaker profiles have been created yet.");
         }
 
-        ImGui.TextUnformatted($"Saved profiles: {profiles.Count}");
+        DrawEditorSectionLabel("PROFILE LIBRARY");
+        ImGui.TextDisabled($"Saved profiles: {profiles.Count}");
         ImGui.Spacing();
 
-        if (ImGui.Button("Add Speaker"))
+        if (DrawEditorButton("Add Speaker", useGoldAccent: true))
         {
             isAddingProfile = true;
 
@@ -219,7 +326,7 @@ public class SpeakerProfileWindow : Window, IDisposable
 
             if (selectedProfile != null)
             {
-                ImGui.TextUnformatted("Selected Speaker");
+                DrawEditorSectionLabel("SELECTED SPEAKER");
                 ImGui.Spacing();
 
                 ImGui.TextUnformatted(
@@ -239,7 +346,7 @@ public class SpeakerProfileWindow : Window, IDisposable
 
                 ImGui.Spacing();
 
-                if (ImGui.Button("Edit Selected"))
+                if (DrawEditorButton("Edit Selected"))
                 {
                     isAddingProfile = false;
 
@@ -254,7 +361,7 @@ public class SpeakerProfileWindow : Window, IDisposable
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Delete Selected"))
+                if (DrawEditorButton("Delete Selected", useGoldAccent: true))
                 {
                     var editorPosition = ImGui.GetWindowPos();
                     var editorSize = ImGui.GetWindowSize();
@@ -311,7 +418,7 @@ public class SpeakerProfileWindow : Window, IDisposable
 
             ImGui.SameLine();
 
-            if (ImGui.Button("Save Changes"))
+            if (DrawEditorButton("Save Changes", useGoldAccent: true))
             {
                 profileSaveError = string.Empty;
 
@@ -425,14 +532,14 @@ public class SpeakerProfileWindow : Window, IDisposable
                 ImGui.Separator();
                 ImGui.Spacing();
 
-                if (ImGui.Button("Cancel##Delete"))
+                if (DrawEditorButton("Canel##Delete"))
                 {
                     ImGui.CloseCurrentPopup();
                 }
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Delete Profile"))
+                if (DrawEditorButton("Delete Profile", useGoldAccent: true))
                 {
                     profiles.RemoveAt(selectedProfileIndex);
                     selectedProfileIndex = -1;
@@ -453,5 +560,80 @@ public class SpeakerProfileWindow : Window, IDisposable
             ImGui.EndPopup();
         }
     }
+
+    private static void DrawEditorTitle(string title)
+    {
+        ImGui.Spacing();
+
+        ImGui.PushStyleColor(
+            ImGuiCol.Text,
+            new Vector4(0.60f, 0.84f, 0.98f, 1.00f));
+
+        ImGui.TextUnformatted(title);
+
+        ImGui.PopStyleColor();
+
+        ImGui.Spacing();
+
+        ImGui.PushStyleColor(
+            ImGuiCol.Separator,
+            new Vector4(0.38f, 0.31f, 0.20f, 0.85f));
+
+        ImGui.Separator();
+
+        ImGui.PopStyleColor();
+
+        ImGui.Spacing();
+    }
+
+    private static void DrawEditorSectionLabel(string label)
+    {
+        ImGui.PushStyleColor(
+            ImGuiCol.Text,
+            new Vector4(0.93f, 0.72f, 0.37f, 1.00f));
+
+        ImGui.TextUnformatted(label);
+
+        ImGui.PopStyleColor();
+    }
+
+    private static bool DrawEditorButton(string label, bool useGoldAccent = false, bool useDangerAccent = false)
+    {
+        var buttonColor = useGoldAccent
+            ? new Vector4(0.38f, 0.28f, 0.12f, 1.00f)
+            : useDangerAccent
+              ? new Vector4(0.30f, 0.095f, 0.12f, 1.00f)
+              : new Vector4(0.075f, 0.15f, 0.220f, 1.00f);
+
+        var hoveredColor = useGoldAccent
+            ? new Vector4(0.52f, 0.38f, 0.15f, 1.00f)
+            : useDangerAccent
+               ? new Vector4(0.44f, 0.12f, 0.15f, 1.00f)
+               : new Vector4(0.100f, 0.280f, 0.370f, 1.00f);
+
+        var activeColor = useGoldAccent
+            ? new Vector4(0.65f, 0.47f, 0.19f, 1.00f)
+            : useDangerAccent
+               ? new Vector4(0.56f, 0.15f, 0.18f, 1.00f)
+               : new Vector4(0.120f, 0.360f, 0.460f, 1.00f);
+
+        var textColor = useGoldAccent
+            ? new Vector4(0.98f, 0.92f, 0.79f, 1.00f)
+            : useDangerAccent
+               ? new Vector4(0.98f, 0.89f, 0.87f, 1.00f)
+               : new Vector4(0.890f, 0.920f, 0.970f, 1.00f);
+
+        ImGui.PushStyleColor(ImGuiCol.Button, buttonColor);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, hoveredColor);
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, activeColor);
+        ImGui.PushStyleColor(ImGuiCol.Text, textColor);
+
+        var clicked = ImGui.Button(label);
+
+        ImGui.PopStyleColor(4);
+
+        return clicked;
+    }
 }
+
 
