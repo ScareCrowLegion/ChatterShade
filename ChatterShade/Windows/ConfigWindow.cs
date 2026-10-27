@@ -13,6 +13,9 @@ public class ConfigWindow : Window, IDisposable
     private readonly Plugin plugin;
     private int livePreviewStyle = 0;
     private int selectedWorkspace = 0;
+    private bool standardDialgoueExpanded = true;
+    private bool darkDialogueExpanded = true;
+    private bool npcNameCustomizationExpanded = true;
     private int selectedPresetIndex = -1;
     private string newPresetName = string.Empty;
     private string presetStatusMessage = string.Empty;
@@ -290,6 +293,33 @@ public class ConfigWindow : Window, IDisposable
                 previewBackgroundOpacity = 1f;
             }
 
+            if (!configuration.Enabled)
+            {
+                ImGui.TextDisabled(
+                    "Preview shows saved settings; dialogue coloring is globally disabled.");
+            }
+            else if (!previewIsDark && !configuration.DarkDialogueEnabled)
+            {
+                ImGui.TextDisabled(
+                    "Dark / System Dialogue customization is diabled.");
+            }
+            else if (!previewIsDark && !configuration.StandardDialogueEnabled)
+            {
+                ImGui.TextDisabled(
+                    "Stndard Dialogue customization is disabled.");
+            }
+            else if (!previewIsDark && !configuration.NpcNameColorEnabled)
+            {
+                ImGui.TextDisabled(
+                    "NPC name customization is disabled; the preview uses neutral name test");
+            }
+
+            if (previewBackgroundMode == DialogueBackgroundMode.OriginalTexture)
+            {
+                ImGui.TextDisabled(
+                    "Original texture selected; the preview uses a flat-color approximation.");
+            }
+
             DrawDialoguePreview(
                 "DialogueLivePreview",
                 previewIsDark ? string.Empty : "Arielle",
@@ -326,7 +356,7 @@ public class ConfigWindow : Window, IDisposable
             // Standard Dialogue section
             if (DrawStyleCollapsingHeader(
                     "Standard Dialogue",
-                    ImGuiTreeNodeFlags.DefaultOpen))
+                    ref standardDialgoueExpanded))
             {
                 var standardEnabled = configuration.StandardDialogueEnabled;
                 if (ImGui.Checkbox("Customize standard dialogue", ref standardEnabled))
@@ -426,7 +456,7 @@ public class ConfigWindow : Window, IDisposable
             // Dark / System Dialogue section
             if (DrawStyleCollapsingHeader(
                     "Dark / System Dialogue",
-                    ImGuiTreeNodeFlags.DefaultOpen))
+                    ref darkDialogueExpanded))
             {
                 var darkEnabled = configuration.DarkDialogueEnabled;
                 if (ImGui.Checkbox("Customize dark dialogue", ref darkEnabled))
@@ -528,7 +558,7 @@ public class ConfigWindow : Window, IDisposable
             // Independent NPC Name Customization section
             if (DrawStyleCollapsingHeader(
                     "NPC Name Customization",
-                    ImGuiTreeNodeFlags.DefaultOpen))
+                    ref npcNameCustomizationExpanded))
             {
                 var npcNameEnabled = configuration.NpcNameColorEnabled;
                 if (ImGui.Checkbox("Customize NPC names", ref npcNameEnabled))
@@ -945,36 +975,59 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Spacing();
     }
 
-    private static bool DrawStyleCollapsingHeader(string label, ImGuiTreeNodeFlags flags)
+    private static bool DrawStyleCollapsingHeader(
+        string label,
+        ref bool isExpanded)
     {
-        // Midnight-blue panel with aether-blue interaction state.
+        // Match the original rounded navy header panel.
         ImGui.PushStyleColor(
-            ImGuiCol.Header,
+            ImGuiCol.Button,
             new Vector4(0.065f, 0.110f, 0.170f, 1.00f));
 
         ImGui.PushStyleColor(
-            ImGuiCol.HeaderHovered,
+            ImGuiCol.ButtonHovered,
             new Vector4(0.090f, 0.240f, 0.340f, 1.00f));
 
         ImGui.PushStyleColor(
-            ImGuiCol.HeaderActive,
+            ImGuiCol.ButtonActive,
             new Vector4(0.120f, 0.310f, 0.420f, 1.00f));
 
-        // Give the header a softer, panel-like shape.
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 5f);
-        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding,
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.FrameRounding,
+            5f);
+
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.FramePadding,
             new Vector2(10f, 7f));
 
-        var isExpanded = ImGui.CollapsingHeader(
-            label, 
-            flags | ImGuiTreeNodeFlags.Framed);
+        // Preserve a visible expansion indicator.
+        var marker = isExpanded ? "v" : ">";
 
-        // Restore the shared theme after drawing the header.
+        // Align the label to the left and center it vertically.
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.ButtonTextAlign,
+            new Vector2(0f, 0.5f));
+
+        // The entire available row remains clickable.
+        var clicked = ImGui.Button(
+            $"{marker}  {label}",
+            new Vector2(ImGui.GetContentRegionAvail().X, 0f));
+
+        ImGui.PopStyleVar();
+
+        if (clicked)
+        {
+            isExpanded = !isExpanded;
+        }
+
+        // Restore the shared theme.
         ImGui.PopStyleVar(2);
         ImGui.PopStyleColor(3);
 
         return isExpanded;
     }
+
+
 
     private static bool DrawStyledActionButton(string label, bool useGoldAccent = false)
     {
