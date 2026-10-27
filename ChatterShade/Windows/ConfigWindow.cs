@@ -172,7 +172,7 @@ public class ConfigWindow : Window, IDisposable
 
     public override void Draw()
     {
-        // Aetheric Studio workspace layout design.
+        // ChatterShade workspace layout design.
         ImGui.BeginGroup();
 
         // Left Navigation sidebar.
@@ -181,35 +181,38 @@ public class ConfigWindow : Window, IDisposable
               true);
 
         ImGui.Spacing();
-        ImGui.TextUnformatted("AETHERIC STUDIO");
+
+        // ChatterShade brand heading.
+        ImGui.PushStyleColor(
+            ImGuiCol.Text,
+            new Vector4(0.93f, 0.72f, 0.37f, 1.00f));
+
+        ImGui.TextUnformatted("CHATTER");
+
+        ImGui.PopStyleColor();
+
+        ImGui.SameLine(0, 4f);
+        ImGui.TextUnformatted("SHADE");
+
+        ImGui.Spacing();
+
+        // Subtle crystal-gold divider.
+        ImGui.PushStyleColor(
+            ImGuiCol.Separator,
+            new Vector4(0.38f, 0.31f, 0.20f, 0.85f));
+
         ImGui.Separator();
+
+        ImGui.PopStyleColor();
+
         ImGui.Spacing();
         ImGui.TextDisabled("WORKSPACE");
         ImGui.Spacing();
 
-        if (ImGui.Selectable($"{(selectedWorkspace == 0 ? "> " : " ")}Appearance", selectedWorkspace == 0,
-                 ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, 0)))
-        {
-            selectedWorkspace = 0;
-        }
-
-        if (ImGui.Selectable($"{(selectedWorkspace == 1 ? "> " : " ")}Speakers", selectedWorkspace == 1,
-                 ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, 0)))
-        {
-            selectedWorkspace = 1;
-        }
-
-        if (ImGui.Selectable($"{(selectedWorkspace == 2 ? "> " : " ")}Presets", selectedWorkspace == 2,
-                 ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, 0)))
-        {
-            selectedWorkspace = 2;
-        }
-
-        if (ImGui.Selectable($"{(selectedWorkspace == 3 ? "> " : " ")}Settings", selectedWorkspace == 3,
-                 ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, 0)))
-        {
-            selectedWorkspace = 3;
-        }
+        DrawNavigationItem("Appearance", 0);
+        DrawNavigationItem("Speakers", 1);
+        DrawNavigationItem("Presets", 2);
+        DrawNavigationItem("Settings", 3);
 
         ImGui.EndChild();
 
@@ -785,8 +788,32 @@ public class ConfigWindow : Window, IDisposable
             ImGui.TextWrapped(
                 "General plugin settings and maintenance options will be organized here.");
         }
-        ImGui.EndChild(); // End of ChatterSpace Workspace.
+        ImGui.EndChild(); 
+        // End of ChatterSpace Workspace.
+
         ImGui.EndGroup();
+    }
+
+    private void DrawNavigationItem(string label, int workspace)
+    {
+        var isSelected = selectedWorkspace == workspace;
+
+        var textColor = isSelected
+            ? new Vector4(0.95f, 0.78f, 0.48F, 1.00f)
+            : new Vector4(0.82f, 0.87f, 0.94f, 1.00f);
+
+        ImGui.PushStyleColor(ImGuiCol.Text, textColor);
+
+        if (ImGui.Selectable(
+            $"{(isSelected ? "> " : " ")}{label}",
+            isSelected,
+            ImGuiSelectableFlags.None,
+            new Vector2(ImGui.GetContentRegionAvail().X, 0)))
+        {
+            selectedWorkspace = workspace;
+        }
+
+        ImGui.PopStyleColor();
     }
 
     private AppearancePreset CreateAppearancePreset(string name)
