@@ -11,7 +11,7 @@ public class ConfigWindow : Window, IDisposable
     private readonly Configuration configuration;
 
     private readonly Plugin plugin;
-
+    private int livePreviewStyle = 0;
     private int selectedWorkspace = 0;
     private int selectedPresetIndex = -1;
     private string newPresetName = string.Empty;
@@ -234,6 +234,62 @@ public class ConfigWindow : Window, IDisposable
             DrawWorkspaceTitle("Appearance");
 
             ImGui.TextWrapped("Customize dialogue text, background and NPC name colors.");
+            ImGui.Spacing();
+
+            DrawSectionLabel("LIVE PREVIEW");
+            ImGui.Spacing();
+
+            ImGui.SetNextItemWidth(
+                ImGui.GetContentRegionAvail().X * 0.65f);
+
+            ImGui.Combo(
+                "Preview style##LiveDialoguePreview",
+                ref livePreviewStyle,
+                "Standard Dialogue\0Dark / System Dialogue\0");
+
+            var previewIsDark = livePreviewStyle == 1;
+
+            var previewBackgroundTint = previewIsDark
+                ? configuration.DarkDialogueBackgroundTint
+                : configuration.DialogueBackgroundTint;
+
+            var previewBackgroundMode = previewIsDark
+                ? configuration.DarkBackgroundMode
+                : configuration.StandardBackgroundMode;
+
+            var previewBackgroundOpacity = previewIsDark
+                ? configuration.DarkBackgroundOpacity
+                : configuration.StandardBackgroundOpacity;
+
+            var previewTextColor = previewIsDark
+                ? configuration.DarkDialogueTextColor
+                : configuration.DialogueTextColor;
+
+            // NPC name customization applies to standard dialogue.
+            var previewSpeakerColor = !previewIsDark && configuration.NpcNameColorEnabled
+                ? configuration.NpcNameColor
+                : new Vector4(0.89f, 0.92f, 0.97f, 1f);
+
+            if (previewBackgroundMode == DialogueBackgroundMode.OriginalTexture)
+            {
+                // The original game texture cannot be reproduced by the sample panel.
+                // Use full tint opacity while still displaying the configured tint
+                previewBackgroundOpacity = 1f;
+            }
+
+            DrawDialoguePreview(
+                "DialogueLivePreview",
+                previewIsDark ? string.Empty : "Arielle",
+                "The path ahead may be perilous, but we will face it together.",
+                previewBackgroundTint,
+                previewBackgroundOpacity,
+                previewSpeakerColor,
+                previewTextColor);
+
+            ImGui.TextDisabled("Illustrative sample; game textures and fonts may differ.");
+
+            ImGui.Spacing();
+            ImGui.Separator();
             ImGui.Spacing();
 
             var enabled = configuration.Enabled;
@@ -970,6 +1026,67 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.PopStyleColor();
     }
+
+
+    private static void DrawDialoguePreview(
+        string childId,
+        string speakerName,
+        string dialogueText,
+        Vector4 backgroundTint,
+        float backgroundOpacity,
+        Vector4 speakerColor,
+        Vector4 dialogueTextColor)
+    {
+        // Respect the selected background opacity.
+        var previewBackground = backgroundTint;
+        previewBackground.W = Math.Clamp(backgroundOpacity, 0f, 1f);
+
+        // Give the sample dialogue its own rounded panel.
+        ImGui.PushStyleColor(
+            ImGuiCol.ChildBg,
+            previewBackground);
+
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.ChildRounding,
+            6f);
+
+        if (ImGui.BeginChild(
+                childId,
+                new Vector2(0f, 88f),
+                true,
+                ImGuiWindowFlags.NoScrollbar |
+                ImGuiWindowFlags.NoScrollWithMouse))
+        {
+            // Draw the NPC name only when one is supplied.
+            if (!string.IsNullOrWhiteSpace(speakerName))
+            {
+                ImGui.PushStyleColor(
+                    ImGuiCol.Text,
+                    speakerColor);
+
+                ImGui.TextUnformatted(speakerName);
+
+                ImGui.PopStyleColor();
+
+                ImGui.Spacing();
+            }
+
+            // Always draw the dialogue text.
+            ImGui.PushStyleColor(
+                ImGuiCol.Text,
+                dialogueTextColor);
+
+            ImGui.TextWrapped(dialogueText);
+
+            ImGui.PopStyleColor();
+        }
+
+        ImGui.EndChild();
+
+        ImGui.PopStyleVar();
+        ImGui.PopStyleColor();
+    }
+
 
     private AppearancePreset CreateAppearancePreset(string name)
     {
