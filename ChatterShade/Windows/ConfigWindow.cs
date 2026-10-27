@@ -258,6 +258,7 @@ public class ConfigWindow : Window, IDisposable
                 }
 
                 var standardMode = (int)configuration.StandardBackgroundMode;
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 0.62f);
                 if (ImGui.Combo(
                         "Background mode##Standard",
                         ref standardMode,
@@ -269,6 +270,7 @@ public class ConfigWindow : Window, IDisposable
                 }
 
                 var textColor = configuration.DialogueTextColor;
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 0.62f);
                 if (ImGui.ColorEdit4(
                         "Dialogue text",
                         ref textColor,
@@ -285,6 +287,7 @@ public class ConfigWindow : Window, IDisposable
                         ? "Background color##StandardBackground"
                         : "Background tint##StandardBackground";
 
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 0.62f);
                 if (ImGui.ColorEdit4(
                         standardBackgroundLabel,
                         ref backgroundTint,
@@ -298,6 +301,7 @@ public class ConfigWindow : Window, IDisposable
                 {
                     var opacity = configuration.StandardBackgroundOpacity * 100f;
 
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 0.62f);
                     if (ImGui.SliderFloat(
                             "Background opacity##Standard",
                             ref opacity,
@@ -312,7 +316,7 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.Spacing();
 
-                if (ImGui.Button("Restore Original Appearance##Standard"))
+                if (DrawStyledActionButton("Restore Original Appearance##Standard"))
                 {
                     configuration.StandardDialogueEnabled = false;
                     configuration.Save();
@@ -320,7 +324,7 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Use Dark Preset##Standard"))
+                if (DrawStyledActionButton("Use Dark Preset##Standard", true))
                 {
                     configuration.DialogueTextColor =
                         new Vector4(242f / 255f, 242f / 255f, 242f / 255f, 1f);
@@ -354,6 +358,7 @@ public class ConfigWindow : Window, IDisposable
                 }
 
                 var darkMode = (int)configuration.DarkBackgroundMode;
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 0.62f);
                 if (ImGui.Combo(
                         "Background mode##Dark",
                         ref darkMode,
@@ -365,6 +370,7 @@ public class ConfigWindow : Window, IDisposable
                 }
 
                 var darkTextColor = configuration.DarkDialogueTextColor;
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 0.62f);
                 if (ImGui.ColorEdit4(
                         "Dialogue text##Dark",
                         ref darkTextColor,
@@ -381,6 +387,7 @@ public class ConfigWindow : Window, IDisposable
                         ? "Background color##DarkBackground"
                         : "Background tint##DarkBackground";
 
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 0.62f);
                 if (ImGui.ColorEdit4(
                         darkBackgroundLabel,
                         ref darkBackgroundTint,
@@ -394,6 +401,7 @@ public class ConfigWindow : Window, IDisposable
                 {
                     var opacity = configuration.DarkBackgroundOpacity * 100f;
 
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 0.62f);
                     if (ImGui.SliderFloat(
                             "Background opacity##Dark",
                             ref opacity,
@@ -408,7 +416,7 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.Spacing();
 
-                if (ImGui.Button("Restore Original Appearance##Dark"))
+                if (DrawStyledActionButton("Restore Original Appearance##Dark"))
                 {
                     configuration.DarkDialogueEnabled = false;
                     configuration.Save();
@@ -416,7 +424,7 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Use Dark Preset##Dark"))
+                if (DrawStyledActionButton("Use Dark Preset##Dark", true))
                 {
                     configuration.DarkDialogueTextColor =
                         new Vector4(242f / 255f, 242f / 255f, 242f / 255f, 1f);
@@ -452,6 +460,7 @@ public class ConfigWindow : Window, IDisposable
                 }
 
                 var npcNameColor = configuration.NpcNameColor;
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 0.62f);
                 if (ImGui.ColorEdit4(
                         "NPC name color",
                         ref npcNameColor,
@@ -463,7 +472,7 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.Spacing();
 
-                if (ImGui.Button("Restore Original Name##NPC"))
+                if (DrawStyledActionButton("Restore Original Name##NPC"))
                 {
                     configuration.NpcNameColorEnabled = false;
                     configuration.Save();
@@ -471,7 +480,7 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Use White Preset##NPC"))
+                if (DrawStyledActionButton("Use White Preset##NPC", true))
                 {
                     configuration.NpcNameColor = new Vector4(1f, 1f, 1f, 1f);
                     configuration.NpcNameColorEnabled = true;
@@ -513,7 +522,7 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Spacing();
 
-            if (ImGui.Button("Edit Speaker Profiles"))
+            if (DrawStyledActionButton("Edit Speaker Profiles"))
             {
                 plugin.OpenSpeakerProfileWindow();
             }
@@ -537,7 +546,7 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.InputTextWithHint("##NewAppearancePresetName", "Enter a preset name...", ref newPresetName, 64);
 
-            if (ImGui.Button("Save Current Appearance"))
+            if (DrawStyledActionButton("Save Current Appearance"))
             {
                 var trimmedName = newPresetName.Trim();
 
@@ -632,7 +641,7 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.TextWrapped($"Selected preset: {selectedPreset.Name}");
 
-                if (ImGui.Button("Apply Selected Preset"))
+                if (DrawStyledActionButton("Apply Selected Preset"))
                 {
                     ApplyAppearancePreset(selectedPreset);
 
@@ -641,14 +650,14 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Update Selected Preset"))
+                if (DrawStyledActionButton("Update Selected Preset"))
                 {
                     ImGui.OpenPopup("Update Appearance Preset###UpdateAppearancePreset");
                 }
 
                 ImGui.Spacing();
 
-                if (ImGui.Button("Delete Selected Preset"))
+                if (DrawStyledActionButton("Delete Selected Preset"))
                 {
                     ImGui.OpenPopup(
                         "Delete Appearance Preset###DeleteAppearancePreset");
@@ -681,14 +690,14 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.Spacing();
 
-                if (ImGui.Button("Cancel##CancelDeleteAppearancePreset"))
+                if (DrawStyledActionButton("Cancel##CancelDeleteAppearancePreset"))
                 {
                     ImGui.CloseCurrentPopup();
                 }
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Delete Preset##ConfirmDeleteAppearancePreset"))
+                if (DrawStyledActionButton("Delete Preset##ConfirmDeleteAppearancePreset"))
                 {
                     if (canDelete)
                     {
@@ -742,14 +751,14 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.Spacing();
 
-                if (ImGui.Button("Cancel##CancelUpdateAppearancePreset"))
+                if (DrawStyledActionButton("Cancel##CancelUpdateAppearancePreset"))
                 {
                     ImGui.CloseCurrentPopup();
                 }
 
                 ImGui.SameLine();
 
-                if (ImGui.Button("Update Preset##ConfirmUpdateAppearancePreset"))
+                if (DrawStyledActionButton("Update Preset##ConfirmUpdateAppearancePreset"))
                 {
                     if (canUpdate)
                     {
@@ -864,6 +873,41 @@ public class ConfigWindow : Window, IDisposable
         ImGui.PopStyleColor(3);
 
         return isExpanded;
+    }
+
+    private static bool DrawStyledActionButton(string label, bool useGoldAccent = false)
+    {
+        if (useGoldAccent)
+        {
+            // Crystal-gold action button.
+            ImGui.PushStyleColor(
+                ImGuiCol.Button,
+                new Vector4(0.38f, 0.28f, 0.12f, 1.00f));
+
+            ImGui.PushStyleColor(
+                ImGuiCol.ButtonHovered,
+                new Vector4(0.52f, 0.38f, 0.15f, 1.00f));
+
+            ImGui.PushStyleColor(
+                ImGuiCol.ButtonActive,
+                new Vector4(0.65f, 0.47f, 0.19f, 1.00f));
+
+            ImGui.PushStyleColor(
+                ImGuiCol.Text,
+                new Vector4(0.98f, 0.92f, 0.79f, 1.00f));
+        }
+
+        // Draw the button regardless of which style is selected.
+        var clicked = ImGui.Button(label);
+
+        // Restore the colors only when the gold style was applied.
+        if (useGoldAccent)
+        {
+            ImGui.PopStyleColor(4);
+        }
+
+        // Return the button result on every code path.
+        return clicked;
     }
 
     private static void DrawSectionLabel(string label)
