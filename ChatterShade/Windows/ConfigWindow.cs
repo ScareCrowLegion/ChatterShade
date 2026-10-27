@@ -228,9 +228,7 @@ public class ConfigWindow : Window, IDisposable
         // Global enable setting
         if (selectedWorkspace == 0)
         {
-            ImGui.TextUnformatted("Appearance");
-            ImGui.Separator();
-            ImGui.Spacing();
+            DrawWorkspaceTitle("Appearance");
 
             ImGui.TextWrapped("Customize dialogue text, background and NPC name colors.");
             ImGui.Spacing();
@@ -505,9 +503,7 @@ public class ConfigWindow : Window, IDisposable
 
         if (selectedWorkspace == 1)
         {
-            ImGui.TextUnformatted("Speakers");
-            ImGui.Separator();
-            ImGui.Spacing();
+            DrawWorkspaceTitle("Speakers");
 
             DrawSectionLabel("INDIVIDUAL NPC PROFILES");
             ImGui.Spacing();
@@ -524,14 +520,12 @@ public class ConfigWindow : Window, IDisposable
         }
         else if (selectedWorkspace == 2)
         {
-            ImGui.TextUnformatted("Presets");
-            ImGui.Separator();
-            ImGui.Spacing();
+            DrawWorkspaceTitle("Presets");
 
             DrawSectionLabel("APPEARANCE PRESETS");
             ImGui.Spacing();
 
-            ImGui.TextWrapped("Named appearance presets are planned for a future update.");
+            ImGui.TextWrapped("Save and reuse named combinations of dialogue colors, backgrounds, and NPC name styling.");
 
             ImGui.Spacing();
             ImGui.Separator();
@@ -782,9 +776,7 @@ public class ConfigWindow : Window, IDisposable
         }
         else if (selectedWorkspace == 3)
         {
-            ImGui.TextUnformatted("Settings");
-            ImGui.Separator();
-            ImGui.Spacing();
+            DrawWorkspaceTitle("Settings");
             ImGui.TextWrapped(
                 "General plugin settings and maintenance options will be organized here.");
         }
@@ -814,6 +806,33 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.PopStyleColor();
+    }
+
+    private static void DrawWorkspaceTitle(string title)
+    {
+        ImGui.Spacing();
+
+        // Use the native font size for crisp text.
+        ImGui.PushStyleColor(
+            ImGuiCol.Text,
+            new Vector4(0.60f, 0.84f, 0.98f, 1.00f));
+
+        ImGui.TextUnformatted(title);
+
+        ImGui.PopStyleColor();
+
+        ImGui.Spacing();
+
+        // Restrained crystal-gold divider.
+        ImGui.PushStyleColor(
+            ImGuiCol.Separator,
+            new Vector4(0.38f, 0.31f, 0.20f, 0.85f));
+
+        ImGui.Separator();
+
+        ImGui.PopStyleColor();
+
+        ImGui.Spacing();
     }
 
     private static void DrawSectionLabel(string label)
