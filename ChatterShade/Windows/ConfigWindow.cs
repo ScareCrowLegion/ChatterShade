@@ -244,7 +244,7 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Spacing();
             ImGui.Separator();
-            ImGui.TextDisabled("DIALOGUE APPEARANCE");
+            DrawSectionLabel("DIALOGUE APPEARANCE");
             ImGui.Spacing();
 
             // Standard Dialogue section
@@ -438,7 +438,7 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Spacing();
             ImGui.Separator();
-            ImGui.TextDisabled("NAME CUSTOMIZATION");
+            DrawSectionLabel("NAME CUSTOMIZATION");
             ImGui.Spacing();
 
             // Independent NPC Name Customization section
@@ -492,7 +492,7 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Spacing();
             ImGui.Separator();
-            ImGui.TextDisabled("GENERAL SETTINGS");
+            DrawSectionLabel("GENERAL SETTINGS");
             ImGui.Spacing();
 
             var movable = configuration.IsConfigWindowMovable;
@@ -509,7 +509,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.Separator();
             ImGui.Spacing();
 
-            ImGui.TextDisabled("INDIVIDUAL NPC PROFILES");
+            DrawSectionLabel("INDIVIDUAL NPC PROFILES");
             ImGui.Spacing();
 
             ImGui.TextWrapped(
@@ -528,7 +528,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.Separator();
             ImGui.Spacing();
 
-            ImGui.TextDisabled("APPEARANCE PRESETS");
+            DrawSectionLabel("APPEARANCE PRESETS");
             ImGui.Spacing();
 
             ImGui.TextWrapped("Named appearance presets are planned for a future update.");
@@ -812,6 +812,17 @@ public class ConfigWindow : Window, IDisposable
         {
             selectedWorkspace = workspace;
         }
+
+        ImGui.PopStyleColor();
+    }
+
+    private static void DrawSectionLabel(string label)
+    {
+        ImGui.PushStyleColor(
+            ImGuiCol.Text,
+            new Vector4(0.93f, 0.72f, 0.37f, 1.00f));
+
+        ImGui.TextUnformatted(label);
 
         ImGui.PopStyleColor();
     }
