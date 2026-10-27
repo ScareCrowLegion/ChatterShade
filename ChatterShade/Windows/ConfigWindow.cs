@@ -246,7 +246,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.Spacing();
 
             // Standard Dialogue section
-            if (ImGui.CollapsingHeader(
+            if (DrawStyleCollapsingHeader(
                     "Standard Dialogue",
                     ImGuiTreeNodeFlags.DefaultOpen))
             {
@@ -342,7 +342,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.Separator();
 
             // Dark / System Dialogue section
-            if (ImGui.CollapsingHeader(
+            if (DrawStyleCollapsingHeader(
                     "Dark / System Dialogue",
                     ImGuiTreeNodeFlags.DefaultOpen))
             {
@@ -440,7 +440,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.Spacing();
 
             // Independent NPC Name Customization section
-            if (ImGui.CollapsingHeader(
+            if (DrawStyleCollapsingHeader(
                     "NPC Name Customization",
                     ImGuiTreeNodeFlags.DefaultOpen))
             {
@@ -833,6 +833,37 @@ public class ConfigWindow : Window, IDisposable
         ImGui.PopStyleColor();
 
         ImGui.Spacing();
+    }
+
+    private static bool DrawStyleCollapsingHeader(string label, ImGuiTreeNodeFlags flags)
+    {
+        // Midnight-blue panel with aether-blue interaction state.
+        ImGui.PushStyleColor(
+            ImGuiCol.Header,
+            new Vector4(0.065f, 0.110f, 0.170f, 1.00f));
+
+        ImGui.PushStyleColor(
+            ImGuiCol.HeaderHovered,
+            new Vector4(0.090f, 0.240f, 0.340f, 1.00f));
+
+        ImGui.PushStyleColor(
+            ImGuiCol.HeaderActive,
+            new Vector4(0.120f, 0.310f, 0.420f, 1.00f));
+
+        // Give the header a softer, panel-like shape.
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 5f);
+        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding,
+            new Vector2(10f, 7f));
+
+        var isExpanded = ImGui.CollapsingHeader(
+            label, 
+            flags | ImGuiTreeNodeFlags.Framed);
+
+        // Restore the shared theme after drawing the header.
+        ImGui.PopStyleVar(2);
+        ImGui.PopStyleColor(3);
+
+        return isExpanded;
     }
 
     private static void DrawSectionLabel(string label)
