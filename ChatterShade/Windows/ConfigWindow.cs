@@ -1028,36 +1028,39 @@ public class ConfigWindow : Window, IDisposable
     }
 
 
-    private static void DrawDialoguePreview(
-        string childId,
-        string speakerName,
-        string dialogueText,
-        Vector4 backgroundTint,
-        float backgroundOpacity,
-        Vector4 speakerColor,
-        Vector4 dialogueTextColor)
+
+    private static void DrawDialoguePreview(string childId, string speakerName, string dialogueText, Vector4 backgroundTint, float backgroundOpacity, Vector4 speakerColor, Vector4 dialogueTextColor)
     {
-        // Respect the selected background opacity.
+        // Preserve the configured background color and opacity.
         var previewBackground = backgroundTint;
         previewBackground.W = Math.Clamp(backgroundOpacity, 0f, 1f);
 
-        // Give the sample dialogue its own rounded panel.
+        // Give the sample dialogue a defined, aether-blue outline.
         ImGui.PushStyleColor(
             ImGuiCol.ChildBg,
             previewBackground);
 
+        ImGui.PushStyleColor(
+            ImGuiCol.Border,
+            new Vector4(0.19f, 0.38f, 0.50f, 0.90f));
+
+        // Use comfortable padding inside the preview panel.
         ImGui.PushStyleVar(
             ImGuiStyleVar.ChildRounding,
             6f);
 
+        ImGui.PushStyleVar(
+            ImGuiStyleVar.WindowPadding,
+            new Vector2(14f, 10f));
+
         if (ImGui.BeginChild(
                 childId,
-                new Vector2(0f, 88f),
+                new Vector2(0f, 100f),
                 true,
                 ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse))
         {
-            // Draw the NPC name only when one is supplied.
+            // Display the speaker only when the selected style has one.
             if (!string.IsNullOrWhiteSpace(speakerName))
             {
                 ImGui.PushStyleColor(
@@ -1071,7 +1074,7 @@ public class ConfigWindow : Window, IDisposable
                 ImGui.Spacing();
             }
 
-            // Always draw the dialogue text.
+            // Render the dialogue using its configured text color.
             ImGui.PushStyleColor(
                 ImGuiCol.Text,
                 dialogueTextColor);
@@ -1083,9 +1086,11 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.EndChild();
 
-        ImGui.PopStyleVar();
-        ImGui.PopStyleColor();
+        // Restore the parent window's shared theme.
+        ImGui.PopStyleVar(2);
+        ImGui.PopStyleColor(2);
     }
+
 
 
     private AppearancePreset CreateAppearancePreset(string name)
