@@ -12,6 +12,7 @@ public class ConfigWindow : Window, IDisposable
 
     private readonly Plugin plugin;
     private int livePreviewStyle = 0;
+    private AppearancePreset? livePreviewPreset;
     private int selectedWorkspace = 0;
     private bool standardDialgoueExpanded = true;
     private bool darkDialogueExpanded = true;
@@ -263,28 +264,123 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Spacing();
 
+            DrawSectionLabel("PREVIEW SOURCE");
+            ImGui.Spacing();
+
+            configuration.AppearancePresets ??= new();
+            var previewPresets = configuration.AppearancePresets;
+
+            // Clear the selection if the preset no longer exists.
+            if (livePreviewPreset != null &&
+                !previewPresets.Contains(livePreviewPreset))
+            {
+                livePreviewPreset = null;
+            }
+
+            var previewSourceLabel = livePreviewPreset == null
+                ? "Current settings"
+                : string.IsNullOrWhiteSpace(livePreviewPreset.Name)
+                      ? "Unnamed Preset"
+                      : livePreviewPreset.Name;
+
+            ImGui.SetNextItemWidth(
+                ImGui.GetContentRegionAvail().X * 0.72f);
+
+            if (ImGui.BeginCombo("Preview appearance", previewSourceLabel))
+            {
+                var currentSettingsSelected = livePreviewPreset == null;
+
+                if (ImGui.Selectable(
+                    "Current settings##PreviewCurrentSettings",
+                    currentSettingsSelected))
+                {
+                    livePreviewPreset = null;
+                }
+
+                if (currentSettingsSelected)
+                    ImGui.SetItemDefaultFocus();
+
+                for (var i = 0; i < previewPresets.Count; i++)
+                {
+                    var preset = previewPresets[i];
+
+                    if (preset == null)
+                        continue;
+
+                    var displayName = string.IsNullOrWhiteSpace(preset.Name)
+                        ? "Unnamed Preset"
+                        : preset.Name;
+
+                    ImGui.PushID($"PreviewPreset{i}");
+
+                    var isSelected = ReferenceEquals(
+                        livePreviewPreset,
+                        preset);
+
+                    if (ImGui.Selectable(displayName, isSelected))
+                    {
+                        livePreviewPreset = preset;
+                    }
+
+                    if (isSelected)
+                        ImGui.SetItemDefaultFocus();
+
+                    ImGui.PopID();
+                }
+
+                ImGui.EndCombo();
+            }
+
+            ImGui.Spacing();
+        
             var previewIsDark = livePreviewStyle == 1;
 
+
+            var previewStandardEnabled =
+                livePreviewPreset?.StanadardDialogueEnabled
+                ?? configuration.StandardDialogueEnabled;
+
+            var previewDarkEnabled =
+                livePreviewPreset?.DarkDialogueEnabled
+                ?? configuration.DarkDialogueEnabled;
+
+            var previewNpcNameColorEnabled =
+                livePreviewPreset?.NpcNameColorEnabled
+                ?? configuration.NpcNameColorEnabled;
+
+            var previewNpcNameColor =
+                livePreviewPreset?.NpcNameColor
+                ?? configuration.NpcNameColor;
+
             var previewBackgroundTint = previewIsDark
-                ? configuration.DarkDialogueBackgroundTint
-                : configuration.DialogueBackgroundTint;
+                ? livePreviewPreset?.DarkDialogueBackgroundTint
+                    ?? configuration.DarkDialogueBackgroundTint
+                : livePreviewPreset?.DialogueBackgroundTint
+                    ?? configuration.DialogueBackgroundTint;
 
             var previewBackgroundMode = previewIsDark
-                ? configuration.DarkBackgroundMode
-                : configuration.StandardBackgroundMode;
+                ? livePreviewPreset?.DarkBackgroundMode
+                    ?? configuration.DarkBackgroundMode
+                : livePreviewPreset?.StandardBackgroundMode
+                    ?? configuration.StandardBackgroundMode;
 
             var previewBackgroundOpacity = previewIsDark
-                ? configuration.DarkBackgroundOpacity
-                : configuration.StandardBackgroundOpacity;
+                ? livePreviewPreset?.DarkBackgroundOpacity
+                    ?? configuration.DarkBackgroundOpacity
+                : livePreviewPreset?.StandardBackgroundOpacity
+                    ?? configuration.StandardBackgroundOpacity;
 
             var previewTextColor = previewIsDark
-                ? configuration.DarkDialogueTextColor
-                : configuration.DialogueTextColor;
+                ? livePreviewPreset?.DarkDialogueTextColor
+                    ?? configuration.DarkDialogueTextColor
+                : livePreviewPreset?.DialogueTextColor
+                    ?? configuration.DialogueTextColor;
 
             // NPC name customization applies to standard dialogue.
-            var previewSpeakerColor = !previewIsDark && configuration.NpcNameColorEnabled
-                ? configuration.NpcNameColor
-                : new Vector4(0.89f, 0.92f, 0.97f, 1f);
+            var previewSpeakerColor =
+                !previewIsDark && previewNpcNameColorEnabled
+                    ? previewNpcNameColor
+                    : new Vector4(0.89f, 0.92f, 0.97f, 1f);
 
             if (previewBackgroundMode == DialogueBackgroundMode.OriginalTexture)
             {
@@ -293,25 +389,32 @@ public class ConfigWindow : Window, IDisposable
                 previewBackgroundOpacity = 1f;
             }
 
-            if (!configuration.Enabled)
+            if (livePreviewPreset != null)
+            {
+                ImGui.TextDisabled(
+                    $"Previewing saved preset '{livePreviewPreset.Name}'. " +
+                    "Your active settings have not changed.");
+            }
+            else if (!configuration.Enabled)
             {
                 ImGui.TextDisabled(
                     "Preview shows saved settings; dialogue coloring is globally disabled.");
             }
-            else if (!previewIsDark && !configuration.DarkDialogueEnabled)
+            else if (previewIsDark && !previewDarkEnabled)
             {
                 ImGui.TextDisabled(
-                    "Dark / System Dialogue customization is diabled.");
+                    "Dark / System Dialogue customization is disabled.");
             }
-            else if (!previewIsDark && !configuration.StandardDialogueEnabled)
+            else if (!previewIsDark && !previewStandardEnabled)
             {
                 ImGui.TextDisabled(
-                    "Stndard Dialogue customization is disabled.");
+                    "Standard Dialogue customization is disabled.");
             }
-            else if (!previewIsDark && !configuration.NpcNameColorEnabled)
+
+            if (!previewIsDark && !previewNpcNameColorEnabled)
             {
                 ImGui.TextDisabled(
-                    "NPC name customization is disabled; the preview uses neutral name test");
+                    "NPC name customization is disabled; the preview uses neutral name text.");
             }
 
             if (previewBackgroundMode == DialogueBackgroundMode.OriginalTexture)
@@ -813,8 +916,14 @@ public class ConfigWindow : Window, IDisposable
                 {
                     if (canDelete)
                     {
+                        var presetToDelete = savedPresets[selectedPresetIndex];
+
+                        if (ReferenceEquals(livePreviewPreset, presetToDelete))
+                        {
+                            livePreviewPreset = null;
+                        }
+
                         savedPresets.RemoveAt(selectedPresetIndex);
-                        selectedPresetIndex = -1;
 
                         configuration.Save();
 
@@ -874,8 +983,15 @@ public class ConfigWindow : Window, IDisposable
                 {
                     if (canUpdate)
                     {
-                        savedPresets[selectedPresetIndex] =
-                            CreateAppearancePreset(presetName);
+                        var previousPreset = savedPresets[selectedPresetIndex];
+                        var updatedPreset = CreateAppearancePreset(presetName);
+
+                        savedPresets[selectedPresetIndex] = updatedPreset;
+
+                        if (ReferenceEquals(livePreviewPreset, previousPreset))
+                        {
+                            livePreviewPreset = updatedPreset;
+                        }
 
                         configuration.Save();
 
