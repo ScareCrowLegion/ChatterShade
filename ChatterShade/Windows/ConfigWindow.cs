@@ -1235,6 +1235,39 @@ public class ConfigWindow : Window, IDisposable
         var previewBackground = backgroundTint;
         previewBackground.W = Math.Clamp(backgroundOpacity, 0f, 1f);
 
+        // Measure the dialogue using the available preview width.
+        const float horizontalPadding = 14f;
+        const float verticalPadding = 10f;
+
+        var availableWidth = Math.Max(
+            120f,
+            ImGui.GetContentRegionAvail().X);
+
+        var textWrapWidth = Math.Max(
+            80f,
+            availableWidth - horizontalPadding * 2f - 2f);
+
+        var dialogueTextSize = ImGui.CalcTextSize(
+            dialogueText,
+            false,
+            textWrapWidth);
+
+        // Reserve additional space when a speaker name is shown.
+        var speakerHeight = string.IsNullOrWhiteSpace(speakerName)
+            ? 0f
+            : ImGui.GetTextLineHeight()
+              + ImGui.GetStyle().ItemSpacing.Y
+              + 4f;
+
+        // Keep short dialogue panels compact while allowing longer 
+        // dialogue to use more vertical space.
+        var previewHeight = Math.Max(
+            100f,
+            verticalPadding * 2f
+              + dialogueTextSize.Y
+              + speakerHeight
+              + 8f);
+
         // Give the sample dialogue a defined, aether-blue outline.
         ImGui.PushStyleColor(
             ImGuiCol.ChildBg,
@@ -1255,7 +1288,7 @@ public class ConfigWindow : Window, IDisposable
 
         if (ImGui.BeginChild(
                 childId,
-                new Vector2(0f, 100f),
+                new Vector2(0f, previewHeight),
                 true,
                 ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse))
