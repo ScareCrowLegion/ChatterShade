@@ -540,6 +540,13 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.SameLine();
 
+                if (ImGui.Button("Update Selected Preset"))
+                {
+                    ImGui.OpenPopup("Update Appearance Preset###UpdateAppearancePreset");
+                }
+
+                ImGui.Spacing();
+
                 if (ImGui.Button("Delete Selected Preset"))
                 {
                     ImGui.OpenPopup(
@@ -591,6 +598,67 @@ public class ConfigWindow : Window, IDisposable
 
                         presetStatusMessage =
                             $"Deleted preset '{presetName}'.";
+                    }
+
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.EndPopup();
+            }
+
+            var viewport = ImGui.GetMainViewport();
+            var updatePopupSize = new Vector2(440f, 100f);
+
+            var updatePopupPosition = new Vector2(
+                viewport.Pos.X + (viewport.Size.X - updatePopupSize.X) * 0.5f,
+                viewport.Pos.Y + (viewport.Size.Y - updatePopupSize.Y) * 0.5f);
+
+            ImGui.SetNextWindowPos(
+                updatePopupPosition,
+                ImGuiCond.Always);
+
+            ImGui.SetNextWindowSize(
+                updatePopupSize,
+                ImGuiCond.Always);
+
+            if (ImGui.BeginPopupModal("Update Appearance Preset###UpdateAppearancePreset",
+                    ImGuiWindowFlags.AlwaysAutoResize))
+
+            {
+                var canUpdate =
+                    selectedPresetIndex >= 0 &&
+                    selectedPresetIndex < savedPresets.Count &&
+                    savedPresets[selectedPresetIndex] != null;
+
+                var presetName = canUpdate
+                    ? savedPresets[selectedPresetIndex].Name ?? "Unnamed Preset"
+                    : string.Empty;
+
+                ImGui.TextWrapped(
+                    canUpdate
+                        ? $"Replace '{presetName}' with your current appearance?"
+                        : "No valid preset is selecteda.");
+
+                ImGui.Spacing();
+
+                if (ImGui.Button("Cancel##CancelUpdateAppearancePreset"))
+                {
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Update Preset##ConfirmUpdateAppearancePreset"))
+                {
+                    if (canUpdate)
+                    {
+                        savedPresets[selectedPresetIndex] =
+                            CreateAppearancePreset(presetName);
+
+                        configuration.Save();
+
+                        presetStatusMessage =
+                            $"Updated preset '{presetName}' with the current appearance.";
                     }
 
                     ImGui.CloseCurrentPopup();
