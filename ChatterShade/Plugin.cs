@@ -95,6 +95,84 @@ public sealed class Plugin : IAsyncDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi += ToggleConfigUi;
     }
 
+    private static unsafe bool TryGetTalkBackground(AtkUnitBase* addon,
+        out uint backgroundNodeId,
+        out bool useDarkDialogueColors,
+        out AtkResNode* backgroundNode)
+    {
+        backgroundNodeId = 0;
+        useDarkDialogueColors = false;
+        backgroundNode = null;
+
+        if (addon == null ||
+            addon->AtkValues == null ||
+            addon->AtkValuesCount <= 3)
+            return false;
+
+        var styleId = addon->AtkValues[3].UInt;
+
+        switch (styleId)
+        {
+            case 0: // Normal
+            case 1: // NormalAlt
+                backgroundNodeId = 13;
+                break;
+
+            case 2: // Lights
+                backgroundNodeId = 11;
+                break;
+
+            case 3: //Shout
+                backgroundNodeId = 14;
+                break;
+
+            case 4: // FlatShout
+                backgroundNodeId = 15;
+                break;
+
+            case 5: // Dragon
+                backgroundNodeId = 16;
+                break;
+
+            case 6: // Allagan
+                backgroundNodeId = 17;
+                break;
+
+            case 7: // System
+                backgroundNodeId = 18;
+                useDarkDialogueColors = true;
+                break;
+
+            case 8: // DragonSystem
+                backgroundNodeId = 16;
+                useDarkDialogueColors = true;
+                break;
+
+            case 9: // PurpleSystem
+                backgroundNodeId = 18;
+                useDarkDialogueColors = true;
+                break;
+
+            case 10: // Water
+                backgroundNodeId = 19;
+                break;
+
+            case 11: // Robot
+                backgroundNodeId = 20;
+                useDarkDialogueColors = true;
+                break;
+
+            default:
+                return false;
+        }
+
+        backgroundNode = addon->GetNodeById(backgroundNodeId);
+
+        return backgroundNode != null &&
+            backgroundNode->Type == NodeType.Image &&
+            backgroundNode->IsVisible();
+    }
+
     private unsafe void OnTalkPreDraw(AddonEvent type, AddonArgs args)
     {
         modifiedTextNode = 0;
@@ -113,26 +191,12 @@ public sealed class Plugin : IAsyncDalamudPlugin
         if (textNode == null)
             return;
 
-        modifiedBackgroundNodeId = 13;
-
-        var backgroundNode = addon->GetNodeById(modifiedBackgroundNodeId);
-
-        if (backgroundNode == null || !backgroundNode->IsVisible())
-        {
-            modifiedBackgroundNodeId = 18;
-            backgroundNode = addon->GetNodeById(modifiedBackgroundNodeId);
-        }
-
-        if (backgroundNode == null ||
-             backgroundNode->Type != NodeType.Image ||
-            !backgroundNode->IsVisible())
-             return;
-
-        var useDarkDialogueColors =
-            modifiedBackgroundNodeId == 18 &&
-            backgroundNode != null &&
-            backgroundNode->Type == NodeType.Image &&
-            backgroundNode->IsVisible();
+        if (!TryGetTalkBackground(
+            addon,
+            out modifiedBackgroundNodeId,
+            out var useDarkDialogueColors,
+            out var backgroundNode))
+           return;
 
         var styleEnabled = useDarkDialogueColors
             ? Configuration.DarkDialogueEnabled
@@ -283,22 +347,12 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         var addon = (AtkUnitBase*)args.Addon.Address;
 
-        uint backgroundNodeId = 13;
-
-        var backgroundNode = addon->GetNodeById(backgroundNodeId);
-
-        if (backgroundNode == null || !backgroundNode->IsVisible())
-        {
-            backgroundNodeId = 18;
-            backgroundNode = addon->GetNodeById(backgroundNodeId);
-        }
-
-        if (backgroundNode == null ||
-            backgroundNode->Type != NodeType.Image ||
-            !backgroundNode->IsVisible())
+        if (!TryGetTalkBackground(
+            addon,
+            out var backgroundNodeId,
+            out var useDarkDialogueColors,
+            out var backgroundNode))
             return;
-
-        var useDarkDialogueColors = backgroundNodeId == 18;
 
         var styleEnabled = useDarkDialogueColors
             ? Configuration.DarkDialogueEnabled
@@ -315,9 +369,11 @@ public sealed class Plugin : IAsyncDalamudPlugin
             return;
 
         if (replacementBackgroundNode != null &&
-            replacementBackgroundNodeId != backgroundNodeId)
+            (replacementBackgroundAddon != args.Addon.Address ||
+             replacementBackgroundNodeId != backgroundNodeId))
         {
-            DisposeReplacementBackground();
+            DisposeReplacementBackground(); 
+
         }
 
         if (replacementBackgroundNode == null)

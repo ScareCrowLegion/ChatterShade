@@ -12,6 +12,7 @@ The plugin gives players more control over how dialogue appears in-game, whether
 - Keep the original background texture or use a rounded solid-color background.
 - Adjust background colors and opacity.
 - Restore the original appearance or apply a dark preset.
+- Supports additional native Talk styles, including styles provided by Simple Tweaks Talk Adjustments.
 
 ### NPC Name Customization
 - Set a global NPC speaker name color separately from dialogue text.
@@ -31,6 +32,22 @@ Use `/cshade` in-game to open the configuration window.
 From here, you can adjust dialogue text colors, backgrounds, opacity, and NPC name customization.
 
 ![ChatterShade Configuration](docs/images/settings.png)
+
+## Background Modes
+
+ChatterShade offers two background modes that can be configured independently for Standard Dialogue and Dark/System Dialogue.
+
+### Original Texture
+- Preserves the original game's dialogue background texture.
+- Applies your configured background tint.
+- Maintains the visual differences between native Talk styles.
+
+### Solid Color
+- Replaces the native dialogue background with ChatterShade's custom rounded background.
+- Allows you to customize the background color and opacity.
+- Uses the same background appearance across all native Talk styles.
+
+**Important:** When Solid Color mode is enabled, all NPC dialogue windows will use the same custom background appearance, regardless of their native Talk style. This applies whether or not Simple Tweaks Talk Adjustments is installed or enabled. The visual differences between native Talk styles will not be preserved while using this mode.
 
 ## Speaker Profiles
 
