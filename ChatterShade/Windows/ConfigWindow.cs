@@ -224,7 +224,7 @@ public class ConfigWindow : Window, IDisposable
 
 
             var previewStandardEnabled =
-                livePreviewPreset?.StanadardDialogueEnabled
+                livePreviewPreset?.StandardDialogueEnabled
                 ?? configuration.StandardDialogueEnabled;
 
             var previewDarkEnabled =
@@ -1268,7 +1268,7 @@ public class ConfigWindow : Window, IDisposable
         {
             Name = name,
 
-            StanadardDialogueEnabled = configuration.StandardDialogueEnabled,
+            StandardDialogueEnabled = configuration.StandardDialogueEnabled,
             DarkDialogueEnabled = configuration.DarkDialogueEnabled,
 
             StandardBackgroundMode = configuration.StandardBackgroundMode,
@@ -1287,9 +1287,10 @@ public class ConfigWindow : Window, IDisposable
             NpcNameColor = configuration.NpcNameColor,
         };
     }
+
     private void ApplyAppearancePreset(AppearancePreset preset)
     {
-        configuration.StandardDialogueEnabled = preset.StanadardDialogueEnabled;
+        configuration.StandardDialogueEnabled = preset.StandardDialogueEnabled;
         configuration.DarkDialogueEnabled = preset.DarkDialogueEnabled;
 
         configuration.StandardBackgroundMode = preset.StandardBackgroundMode;

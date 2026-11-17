@@ -73,7 +73,10 @@ public class Configuration : IPluginConfiguration
         if (Version < 2)
         {
             AppearancePresets ??= new List<AppearancePreset>();
+
+            Version = 2;
         }
+
         Save();
     }
 

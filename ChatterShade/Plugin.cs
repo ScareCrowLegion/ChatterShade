@@ -264,8 +264,11 @@ public sealed class Plugin : IAsyncDalamudPlugin
             originalBackgroundColor = backgroundNode->Color;
             modifiedBackgroundNode = (nint)backgroundNode;
 
-            var tint = ToByteColor(useDarkDialogueColors 
-                ? Configuration.DarkDialogueBackgroundTint : Configuration.DialogueBackgroundTint);
+            var backgroundTint = useDarkDialogueColors
+                ? Configuration.DarkDialogueBackgroundTint
+                : Configuration.DialogueBackgroundTint;
+
+            var tint = ToByteColor(backgroundTint);
 
             backgroundNode->SetAlpha(tint.A);
             backgroundNode->Color = tint;
@@ -335,6 +338,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         nativeBackgroundHiddenForDraw = false;
     }
+
     private unsafe void OnTalkPostUpdate(AddonEvent type, AddonArgs args)
     {
         if (replacementBackgroundNode != null)
@@ -368,12 +372,13 @@ public sealed class Plugin : IAsyncDalamudPlugin
         if (backgroundMode != DialogueBackgroundMode.SolidColor)
             return;
 
+        // Dispose of a replacement node if it belongs to a different
+        // dialogue addon or background node.
         if (replacementBackgroundNode != null &&
             (replacementBackgroundAddon != args.Addon.Address ||
-             replacementBackgroundNodeId != backgroundNodeId))
+            replacementBackgroundNodeId != backgroundNodeId))
         {
-            DisposeReplacementBackground(); 
-
+            DisposeReplacementBackground();
         }
 
         if (replacementBackgroundNode == null)
